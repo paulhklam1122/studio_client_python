@@ -44,7 +44,7 @@ jobs:
       # Lint
       - run:
           name: Lint
-          command: echo "Complete"
+          command: pylint ~/repo/skylab_genesis/
 
       # Unit tests
       - run:

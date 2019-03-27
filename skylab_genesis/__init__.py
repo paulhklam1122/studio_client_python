@@ -1,40 +1,61 @@
+"""
+SkylabGenesis - Python Client
+For more information, visit https://genesis.skylabtech.ai
+"""
+
 import logging
 
-from .encoder import SkylabGenesisJSONEncoder
 from .exceptions import APIError, AuthenticationError, ServerError
-from .version import version
+from .version import VERSION
 
-class api:
-  API_PROTO = 'https'
-  API_PORT = '443'
-  API_HOST = 'genesis.skylabtech.ai'
-  API_VERSION = '1'
-  API_HEADER_KEY = 'X-SLT-API-KEY'
-  API_HEADER_CLIENT = 'X-SLT-API-CLIENT'
-  API_KEY = 'THIS_IS_A_TEST_API_KEY'
+API_HEADER_KEY = 'X-SLT-API-KEY'
+API_HEADER_CLIENT = 'X-SLT-API-CLIENT'
 
-  DEBUG = False
+LOGGER = logging.getLogger('skylab_genesis')
+LOGGER.propagate = False
 
-  def __init__(self, api_key=None, json_encoder=SkylabGenesisJSONEncoder, raise_errors=False, default_timeout=None, **kwargs):
-    if not api_key:
-      raise Exception("You must specify an api key")
+class API:
+    """The client for accessing the Skylab Genesis platform.
 
-    self.API_KEY = api_key
-    self._json_encoder = json_encoder
-    self._raise_errors = raise_errors
+    Args:
+        api_key (str): Your account's API KEY.
 
-    if 'API_HOST' in kwargs:
-      self.API_HOST = kwargs['API_HOST']
-    if 'API_PROTO' in kwargs:
-      self.API_PROTO = kwargs['API_PROTO']
-    if 'API_PORT' in kwargs:
-      self.API_PORT = kwargs['API_PORT']
-    if 'API_VERSION' in kwargs:
-      self.API_VERSION = kwargs['API_VERSION']
-    if 'DEBUG' in kwargs:
-      self.DEBUG = kwargs['DEBUG']
+    Attributes:
+        api_proto (str): The API endpoint protocol.
+        api_port (str): The API endpoint port.
+        api_host (str): The API endpoint host name.
+        api_version (str): The API endpoint version number.
+        api_key (str): The API key to use.
+        debug (boolean): Whether or not to allow debugging information to be printed.
+    """
 
-    if self.DEBUG:
-      logging.basicConfig(format=LOGGER_FORMAT, level=logging.DEBUG)
-      logger.debug('Debug enabled')
-      logger.propagate = True
+    api_proto = 'https'
+    api_port = '443'
+    api_host = 'genesis.skylabtech.ai'
+    api_version = '1'
+    api_key = 'THIS_IS_A_TEST_API_KEY'
+
+    debug = False
+
+    def __init__(self, api_key=None, **kwargs):
+        if not api_key:
+            raise Exception("You must specify an api key")
+
+        self.api_key = api_key
+
+        if 'api_host' in kwargs:
+            self.api_host = kwargs['api_host']
+        if 'api_proto' in kwargs:
+            self.api_proto = kwargs['api_proto']
+        if 'api_port' in kwargs:
+            self.api_port = kwargs['api_port']
+        if 'api_version' in kwargs:
+            self.api_version = kwargs['api_version']
+        if 'debug' in kwargs:
+            self.debug = kwargs['debug']
+
+        if self.debug:
+            logging.basicConfig(format='%(asctime)-15s %(message)s', level=logging.DEBUG)
+
+            LOGGER.debug('Debug enabled')
+            LOGGER.propagate = True
