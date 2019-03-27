@@ -49,7 +49,7 @@ jobs:
       # Lint
       - run:
           name: Lint
-          command: pylint ~/repo/skylab_genesis/
+          command: pylint --rcfile=~/repo/.pylintrc ~/repo/skylab_genesis/
 
       # Unit tests
       - run:
