@@ -27,7 +27,6 @@ setup(
     extras_require={
         "test": [
             "pytest >= 3.0.5",
-            "pytest-xdist >= 1.15.0"
         ]
     },
     classifiers=[
