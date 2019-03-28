@@ -15,7 +15,7 @@ API_HEADER_CLIENT = 'X-SLT-API-CLIENT'
 LOGGER = logging.getLogger('skylab_genesis')
 LOGGER.propagate = False
 
-class API:
+class api:
     """
     The client for accessing the Skylab Genesis platform.
 
@@ -66,7 +66,7 @@ class API:
         return (self.api_key, '')
 
     @staticmethod
-    def _build_request_headers(custom_headers=None):
+    def _build_request_headers():
         client_header = '%s-%s' % (
             'python',
             VERSION
@@ -78,21 +78,19 @@ class API:
             'Accept': 'text/plain'
         }
 
-        if custom_headers:
-            headers.update(custom_headers)
-
         return headers
 
-    def _build_request_path(self, endpoint, absolute=True):
+    def _build_request_path(self, endpoint):
         path = '/api/v%s/%s' % (self.api_version, endpoint)
 
-        if absolute:
-            path = "%s://%s:%s%s" % (
-                self.api_proto,
-                self.api_host,
-                self.api_port,
-                path
-            )
+        path = "%s://%s:%s%s" % (
+            self.api_proto,
+            self.api_host,
+            self.api_port,
+            path
+        )
+
+        return path
 
     @staticmethod
     def _build_payload(data):
@@ -107,7 +105,7 @@ class API:
 
         auth = self._build_http_auth()
 
-        headers = self._build_request_headers(kwargs.get('headers'))
+        headers = self._build_request_headers()
         LOGGER.debug('\theaders: %s', headers)
 
         path = self._build_request_path(endpoint)
@@ -129,10 +127,7 @@ class API:
             else:
                 response = requests.post(path, **req_kw)
         elif http_method == 'PUT':
-            if data:
-                response = requests.put(path, data=data, **req_kw)
-            else:
-                response = requests.put(path, **req_kw)
+            response = requests.put(path, data=data, **req_kw)
         elif http_method == 'DELETE':
             response = requests.delete(path, **req_kw)
         else:

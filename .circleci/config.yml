@@ -54,7 +54,7 @@ jobs:
       # Unit tests
       - run:
           name: run tests
-          command: echo "Complete"
+          command: python -m pytest
 
 workflows:
   version: 2

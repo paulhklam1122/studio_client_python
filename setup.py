@@ -27,6 +27,8 @@ setup(
     extras_require={
         "test": [
             "pytest >= 3.0.5",
+            "pytest-cov >= 2.6.1",
+            "requests_mock >= 1.5.2",
         ]
     },
     classifiers=[
