@@ -3,7 +3,9 @@ SkylabGenesis - Python Client
 For more information, visit https://genesis.skylabtech.ai
 """
 
+import json
 import logging
+import requests
 
 from .exceptions import APIError, AuthenticationError, ServerError
 from .version import VERSION
@@ -15,7 +17,8 @@ LOGGER = logging.getLogger('skylab_genesis')
 LOGGER.propagate = False
 
 class API:
-    """The client for accessing the Skylab Genesis platform.
+    """
+    The client for accessing the Skylab Genesis platform.
 
     Args:
         api_key (str): Your account's API KEY.
@@ -59,3 +62,232 @@ class API:
 
             LOGGER.debug('Debug enabled')
             LOGGER.propagate = True
+
+    def _build_http_auth(self):
+        return (self.api_key, '')
+
+    @staticmethod
+    def _build_request_headers(custom_headers=None):
+        client_header = '%s-%s' % (
+            'python',
+            VERSION
+        )
+
+        headers = {
+            API_HEADER_CLIENT: client_header,
+            'Content-type': 'application/json',
+            'Accept': 'text/plain'
+        }
+
+        if custom_headers:
+            headers.update(custom_headers)
+
+        return headers
+
+    def _build_request_path(self, endpoint, absolute=True):
+        path = '/api/v%s/%s' % (self.api_version, endpoint)
+
+        if absolute:
+            path = "%s://%s:%s%s" % (
+                self.api_proto,
+                self.api_host,
+                self.api_port,
+                path
+            )
+
+    @staticmethod
+    def _build_payload(data):
+        if not data:
+            return None
+
+        return json.dumps(data)
+
+    @staticmethod
+    def _parse_response(response):
+        """
+        Parses the API response and raises appropriate errors.
+        """
+        is_4xx_error = str(response.status_code)[0] == '4'
+        is_5xx_error = str(response.status_code)[0] == '5'
+
+        content = response.content
+
+        if response.status_code == 403:
+            raise AuthenticationError(content)
+        elif is_4xx_error:
+            raise APIError(content)
+        elif is_5xx_error:
+            raise ServerError(content)
+
+        return response
+
+    def _api_request(self, endpoint, http_method, **kwargs):
+        """Private method for api requests"""
+        LOGGER.debug(' > Sending API request to endpoint: %s', endpoint)
+
+        auth = self._build_http_auth()
+
+        headers = self._build_request_headers(kwargs.get('headers'))
+        LOGGER.debug('\theaders: %s', headers)
+
+        path = self._build_request_path(endpoint)
+        LOGGER.debug('\tpath: %s', path)
+
+        data = self._build_payload(kwargs.get('payload'))
+        if not data:
+            data = kwargs.get('data')
+        LOGGER.debug('\tdata: %s', data)
+
+        req_kw = dict(
+            auth=auth,
+            headers=headers,
+        )
+
+        if http_method == 'POST':
+            if data:
+                response = requests.post(path, data=data, **req_kw)
+            else:
+                response = requests.post(path, **req_kw)
+        elif http_method == 'PUT':
+            if data:
+                response = requests.put(path, data=data, **req_kw)
+            else:
+                response = requests.put(path, **req_kw)
+        elif http_method == 'DELETE':
+            response = requests.delete(path, **req_kw)
+        else:
+            response = requests.get(path, **req_kw)
+
+        LOGGER.debug('\tresponse code:%s', response.status_code)
+
+        try:
+            LOGGER.debug('\tresponse: %s', response.json())
+        except ValueError:
+            LOGGER.debug('\tresponse: %s', response.content)
+
+        return self._parse_response(response)
+
+    def list_jobs(self):
+        """ API call to get all jobs """
+        return self._api_request(
+            'jobs',
+            'GET'
+        )
+
+    def create_job(self, payload=None):
+        """ API call to create a job """
+        return self._api_request(
+            'jobs',
+            'POST',
+            payload=payload
+        )
+
+    def get_job(self, job_id):
+        """ API call to get a specific job """
+        return self._api_request(
+            'jobs/%s' % job_id,
+            'GET'
+        )
+
+    def update_job(self, job_id, payload=None):
+        """ API call to update a specific job """
+        return self._api_request(
+            'jobs/%s' % job_id,
+            'PUT',
+            payload=payload
+        )
+
+    def delete_job(self, job_id):
+        """ API call to delete a specific job """
+        return self._api_request(
+            'jobs/%s' % job_id,
+            'DELETE'
+        )
+
+    def process_job(self, job_id):
+        """ API call to process a specific job """
+        return self._api_request(
+            'jobs/%s/process' % job_id,
+            'POST'
+        )
+
+    def cancel_job(self, job_id):
+        """ API call to cancel a specific job """
+        return self._api_request(
+            'jobs/%s/cancel' % job_id,
+            'POST'
+        )
+
+    def list_profiles(self):
+        """ API call to get all profiles """
+        return self._api_request(
+            'profiles',
+            'GET'
+        )
+
+    def create_profile(self, payload=None):
+        """ API call to create a profile """
+        return self._api_request(
+            'profiles',
+            'POST',
+            payload=payload
+        )
+
+    def get_profile(self, profile_id):
+        """ API call to get a specific profile """
+        return self._api_request(
+            'profiles/%s' % profile_id,
+            'GET'
+        )
+
+    def update_profile(self, profile_id, payload=None):
+        """ API call to update a specific profile """
+        return self._api_request(
+            'profiles/%s' % profile_id,
+            'PUT',
+            payload=payload
+        )
+
+    def delete_profile(self, profile_id):
+        """ API call to delete a specific profile """
+        return self._api_request(
+            'profiles/%s' % profile_id,
+            'DELETE'
+        )
+
+    def list_photos(self):
+        """ API call to get all photos """
+        return self._api_request(
+            'photos',
+            'GET'
+        )
+
+    def create_photo(self, payload=None):
+        """ API call to create a photo """
+        return self._api_request(
+            'photos',
+            'POST',
+            payload=payload
+        )
+
+    def get_photo(self, photo_id):
+        """ API call to get a specific photo """
+        return self._api_request(
+            'photos/%s' % photo_id,
+            'GET'
+        )
+
+    def update_photo(self, photo_id, payload=None):
+        """ API call to update a specific photo """
+        return self._api_request(
+            'photos/%s' % photo_id,
+            'PUT',
+            payload=payload
+        )
+
+    def delete_photo(self, photo_id):
+        """ API call to delete a specific photo """
+        return self._api_request(
+            'photos/%s' % photo_id,
+            'DELETE'
+        )
