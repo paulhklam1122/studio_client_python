@@ -15,7 +15,7 @@ API_HEADER_CLIENT = 'X-SLT-API-CLIENT'
 LOGGER = logging.getLogger('skylab_genesis')
 LOGGER.propagate = False
 
-class api:
+class api: #pylint: disable=invalid-name
     """
     The client for accessing the Skylab Genesis platform.
 

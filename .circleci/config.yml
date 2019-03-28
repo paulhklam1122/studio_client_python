@@ -49,12 +49,14 @@ jobs:
       # Lint
       - run:
           name: Lint
-          command: pylint --rcfile=~/repo/.pylintrc ~/repo/skylab_genesis/
+          command: pylint --rcfile=~/repo/.pylintrc ~/repo/skylab_genesis/ ~/repo/test/*
 
       # Unit tests
       - run:
           name: run tests
-          command: python -m pytest
+          command: |
+            python -m pytest --cov-report xml --cov=skylab_genesis
+            ./tmp/cc-test-reporter upload-coverage -i coverage.xml
 
 workflows:
   version: 2
