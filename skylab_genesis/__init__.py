@@ -7,7 +7,6 @@ import json
 import logging
 import requests
 
-from .exceptions import APIError, AuthenticationError, ServerError
 from .version import VERSION
 
 API_HEADER_KEY = 'X-SLT-API-KEY'
@@ -102,25 +101,6 @@ class API:
 
         return json.dumps(data)
 
-    @staticmethod
-    def _parse_response(response):
-        """
-        Parses the API response and raises appropriate errors.
-        """
-        is_4xx_error = str(response.status_code)[0] == '4'
-        is_5xx_error = str(response.status_code)[0] == '5'
-
-        content = response.content
-
-        if response.status_code == 403:
-            raise AuthenticationError(content)
-        elif is_4xx_error:
-            raise APIError(content)
-        elif is_5xx_error:
-            raise ServerError(content)
-
-        return response
-
     def _api_request(self, endpoint, http_method, **kwargs):
         """Private method for api requests"""
         LOGGER.debug(' > Sending API request to endpoint: %s', endpoint)
@@ -165,7 +145,7 @@ class API:
         except ValueError:
             LOGGER.debug('\tresponse: %s', response.content)
 
-        return self._parse_response(response)
+        return response
 
     def list_jobs(self):
         """ API call to get all jobs """

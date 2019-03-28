@@ -30,13 +30,7 @@ api = skylab_genesis.api(api_key='YOUR-API-KEY')
 
 ### Error Handling
 
-API calls may raise the following errors:
-
-- `AuthenticationError` - Caused by an invalid API key
-- `APIError` - Caused by an invalid API request (4xx error)
-- `ServerError` - Caused by a server error (5xx error)
-
-Errors can be imported from the skylab_genesis.exceptions module.
+By default, the API calls return a response object no matter the type of response.
 
 ### Endpoints
 
@@ -194,6 +188,22 @@ api.delete_photo(photo_id=1)
 
     >>> response.json().get('profile_id')
     u'numeric-profile-id'
+```
+
+#### Error
+
+* Malformed request
+
+```bash
+    >>> response.status_code
+    400
+```
+
+* Bad API key
+
+```bash
+    >>> response.status_code
+    403
 ```
 
 ## Testing
