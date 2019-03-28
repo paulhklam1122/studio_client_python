@@ -267,5 +267,6 @@ If you're receiving an error in the 400 response range follow these steps:
 To package:
 
 ```bash
-  python setup.py sdist bdist_wheel upload
+  python setup.py sdist bdist_wheel
+  python -m twine upload dist/*
 ```
