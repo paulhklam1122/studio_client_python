@@ -31,7 +31,6 @@ jobs:
       - run:
           name: Lint
           command: |
-            pip install pylint
             python -m pylint --rcfile=~/repo/.pylintrc ~/repo/skylab_genesis/ ~/repo/test/*
 
       # Unit tests
