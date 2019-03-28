@@ -10,11 +10,6 @@ jobs:
     steps:
       - checkout
 
-      - run:
-          name: Download system dependencies
-          command: |
-            sudo apt install pylint
-
       # Download CodeClimate reporter
       - run:
           name: Download cc-test-reporter
@@ -49,7 +44,9 @@ jobs:
       # Lint
       - run:
           name: Lint
-          command: pylint --rcfile=~/repo/.pylintrc ~/repo/skylab_genesis/ ~/repo/test/*
+          command: |
+            pip install pylint
+            python -m pylint --rcfile=~/repo/.pylintrc ~/repo/skylab_genesis/ ~/repo/test/*
 
       # Unit tests
       - run:
