@@ -37,8 +37,9 @@ jobs:
       - run:
           name: run tests
           command: |
+            ./tmp/cc-test-reporter before-build
             python -m pytest --cov-report xml --cov=skylab_genesis
-            ./tmp/cc-test-reporter upload-coverage -i coverage.xml
+            ./tmp/cc-test-reporter after-build --coverage-input-type coverage.py --exit-code $?
 
 workflows:
   version: 2
