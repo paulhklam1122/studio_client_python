@@ -98,7 +98,7 @@ api.list_profiles()
 
 ```python
 payload = {
-  'profile_id': 1
+  'name': 'My profile'
 }
 
 api.create_profile(payload=payload)
@@ -116,7 +116,7 @@ api.get_profile(profile_id=1)
 
 ```python
 payload = {
-  'profile_id': 2
+  'name': 'My profile'
 }
 
 api.create_profile(profile_id=1, payload=payload)
@@ -140,7 +140,7 @@ api.list_photos()
 
 ```python
 payload = {
-  'photo_id': 1
+  'image': 'some-base64-string'
 }
 
 api.create_photo(payload=payload)
@@ -158,7 +158,7 @@ api.get_photo(photo_id=1)
 
 ```python
 payload = {
-  'photo_id': 2
+  'image': 'some-base64-string'
 }
 
 api.create_photo(photo_id=1, payload=payload)
@@ -208,24 +208,17 @@ api.delete_photo(photo_id=1)
 
 ## Testing
 
-Use [tox](https://tox.readthedocs.io/en/latest/) to run the tests:
+To run the test suite:
 
 ```bash
-tox
+pytest
 ```
 
-### Testing Multiple Python Versions
-
-This assumes you have [tox](https://tox.readthedocs.io/en/latest/) installed and used
-[pyenv](https://github.com/yyuu/pyenv) to install multiple versions of python.
-
-Once all the supported python versions are installed simply run:
+To run the test suite with code coverage metrics:
 
 ```bash
-tox
+pytest --cov-report --cov=skylab_genesis
 ```
-
-This will run the tests against all the versions specified in `tox.ini`.
 
 ## Troubleshooting
 
