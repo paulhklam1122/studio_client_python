@@ -1,12 +1,12 @@
-# Skylab Genesis Python Client
+# Skylab Studio Python Client
 
-[![CircleCI](https://circleci.com/gh/skylab-tech/genesis_client_python.svg?style=svg)](https://circleci.com/gh/skylab-tech/genesis_client_python)
+[![CircleCI](https://circleci.com/gh/skylab-tech/studio_client_python.svg?style=svg)](https://circleci.com/gh/skylab-tech/studio_client_python)
 [![Maintainability](https://api.codeclimate.com/v1/badges/6e3316f60d72a9ca9276/maintainability)](https://codeclimate.com/github/skylab-tech/genesis_client_python/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/6e3316f60d72a9ca9276/test_coverage)](https://codeclimate.com/github/skylab-tech/genesis_client_python/test_coverage)
 
-SkylabTech Genesis Python client.
+SkylabTech Studio Python client.
 
-[genesis.skylabtech.ai](https://genesis.skylabtech.ai)
+[studio.skylabtech.ai](https://studio.skylabtech.ai)
 
 ## Requirements
 
@@ -15,7 +15,7 @@ SkylabTech Genesis Python client.
 ## Installation
 
 ```bash
-$ pip install skylab_genesis
+$ pip install skylab_studio
 ```
 
 ## Usage
@@ -23,9 +23,9 @@ $ pip install skylab_genesis
 For all examples, assume:
 
 ```python
-import skylab_genesis
+import skylab_studio
 
-api = skylab_genesis.api(api_key='YOUR-API-KEY')
+api = skylab_studio.api(api_key='YOUR-API-KEY')
 ```
 
 ### Error Handling
@@ -50,7 +50,7 @@ payload = {
 api.create_job(payload=payload)
 ```
 
-For all payload options, consult the [API documentation](http://docs.genesis.skylabtech.ai/#operation/createJob).
+For all payload options, consult the [API documentation](http://docs.studio.skylabtech.ai/#operation/createJob).
 
 #### Get job
 
@@ -68,7 +68,7 @@ payload = {
 api.create_job(job_id=1, payload=payload)
 ```
 
-For all payload options, consult the [API documentation](http://docs.genesis.skylabtech.ai/#operation/updateJobById).
+For all payload options, consult the [API documentation](http://docs.studio.skylabtech.ai/#operation/updateJobById).
 
 #### Delete job
 
@@ -104,7 +104,7 @@ payload = {
 api.create_profile(payload=payload)
 ```
 
-For all payload options, consult the [API documentation](http://docs.genesis.skylabtech.ai/#operation/createProfile).
+For all payload options, consult the [API documentation](http://docs.studio.skylabtech.ai/#operation/createProfile).
 
 #### Get profile
 
@@ -122,7 +122,7 @@ payload = {
 api.create_profile(profile_id=1, payload=payload)
 ```
 
-For all payload options, consult the [API documentation](http://docs.genesis.skylabtech.ai/#operation/updateProfileById).
+For all payload options, consult the [API documentation](http://docs.studio.skylabtech.ai/#operation/updateProfileById).
 
 #### Delete profile
 
@@ -146,7 +146,7 @@ payload = {
 api.create_photo(payload=payload)
 ```
 
-For all payload options, consult the [API documentation](http://docs.genesis.skylabtech.ai/#operation/createPhoto).
+For all payload options, consult the [API documentation](http://docs.studio.skylabtech.ai/#operation/createPhoto).
 
 #### Get photo
 
@@ -164,7 +164,7 @@ payload = {
 api.create_photo(photo_id=1, payload=payload)
 ```
 
-For all payload options, consult the [API documentation](http://docs.genesis.skylabtech.ai/#operation/updatePhotoById).
+For all payload options, consult the [API documentation](http://docs.studio.skylabtech.ai/#operation/updatePhotoById).
 
 #### Delete photo
 
@@ -217,7 +217,7 @@ pytest
 To run the test suite with code coverage metrics:
 
 ```bash
-pytest --cov-report --cov=skylab_genesis
+pytest --cov-report --cov=skylab_studio
 ```
 
 ## Troubleshooting
@@ -231,19 +231,19 @@ pytest --cov-report --cov=skylab_genesis
 ### Enable Debug Mode
 
 Debug mode prints out the underlying request information as well as the data
-payload that gets sent to Genesis. You will most likely find this information
+payload that gets sent to Studio. You will most likely find this information
 in your logs. To enable it, simply put `debug=True` as a parameter when instantiating
 the API object. Use the debug mode to compare the data payload getting
-sent to [Genesis' API docs](http://docs.genesis.skylabtech.ai/#).
+sent to [Studio' API docs](http://docs.studio.skylabtech.ai/#).
 
 ```python
-import skylab_genesis
+import skylab_studio
 
-api = skylab_genesis.api(api_key='YOUR-API-KEY', debug=True)
+api = skylab_studio.api(api_key='YOUR-API-KEY', debug=True)
 ```
 ### Response Ranges
 
-Genesis' API typically sends responses back in these ranges:
+Studio' API typically sends responses back in these ranges:
 
 -   2xx – Successful Request
 -   4xx – Failed Request (Client error)
@@ -251,7 +251,7 @@ Genesis' API typically sends responses back in these ranges:
 
 If you're receiving an error in the 400 response range follow these steps:
 
--   Double check the data and ID's getting passed to Genesis
+-   Double check the data and ID's getting passed to Studio
 -   Ensure your API key is correct
 -   Log and check the body of the response
 
