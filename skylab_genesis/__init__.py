@@ -1,6 +1,6 @@
 """
-SkylabGenesis - Python Client
-For more information, visit https://genesis.skylabtech.ai
+SkylabStudio - Python Client
+For more information, visit https://studio.skylabtech.ai
 """
 
 import json
@@ -12,12 +12,12 @@ from .version import VERSION
 API_HEADER_KEY = 'X-SLT-API-KEY'
 API_HEADER_CLIENT = 'X-SLT-API-CLIENT'
 
-LOGGER = logging.getLogger('skylab_genesis')
+LOGGER = logging.getLogger('skylab_studio')
 LOGGER.propagate = False
 
 class api: #pylint: disable=invalid-name
     """
-    The client for accessing the Skylab Genesis platform.
+    The client for accessing the Skylab Studio platform.
 
     Args:
         api_key (str): Your account's API KEY.
@@ -33,7 +33,7 @@ class api: #pylint: disable=invalid-name
 
     api_proto = 'https'
     api_port = '443'
-    api_host = 'genesis.skylabtech.ai'
+    api_host = 'studio.skylabtech.ai'
     api_version = '1'
     api_key = 'THIS_IS_A_TEST_API_KEY'
 

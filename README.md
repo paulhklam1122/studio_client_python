@@ -1,8 +1,8 @@
 # Skylab Studio Python Client
 
 [![CircleCI](https://circleci.com/gh/skylab-tech/studio_client_python.svg?style=svg)](https://circleci.com/gh/skylab-tech/studio_client_python)
-[![Maintainability](https://api.codeclimate.com/v1/badges/6e3316f60d72a9ca9276/maintainability)](https://codeclimate.com/github/skylab-tech/genesis_client_python/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/6e3316f60d72a9ca9276/test_coverage)](https://codeclimate.com/github/skylab-tech/genesis_client_python/test_coverage)
+[![Maintainability](https://api.codeclimate.com/v1/badges/6e3316f60d72a9ca9276/maintainability)](https://codeclimate.com/github/skylab-tech/studio_client_python/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/6e3316f60d72a9ca9276/test_coverage)](https://codeclimate.com/github/skylab-tech/studio_client_python/test_coverage)
 
 SkylabTech Studio Python client.
 
@@ -192,14 +192,14 @@ api.delete_photo(photo_id=1)
 
 #### Error
 
-* Malformed request
+- Malformed request
 
 ```bash
     >>> response.status_code
     400
 ```
 
-* Bad API key
+- Bad API key
 
 ```bash
     >>> response.status_code
@@ -241,19 +241,20 @@ import skylab_studio
 
 api = skylab_studio.api(api_key='YOUR-API-KEY', debug=True)
 ```
+
 ### Response Ranges
 
 Studio' API typically sends responses back in these ranges:
 
--   2xx – Successful Request
--   4xx – Failed Request (Client error)
--   5xx – Failed Request (Server error)
+- 2xx – Successful Request
+- 4xx – Failed Request (Client error)
+- 5xx – Failed Request (Server error)
 
 If you're receiving an error in the 400 response range follow these steps:
 
--   Double check the data and ID's getting passed to Studio
--   Ensure your API key is correct
--   Log and check the body of the response
+- Double check the data and ID's getting passed to Studio
+- Ensure your API key is correct
+- Log and check the body of the response
 
 ## Distribution
 

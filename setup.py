@@ -1,6 +1,6 @@
 """
-SkylabGenesis - Python Client
-For more information, visit https://genesis.skylabtech.ai
+SkylabStudio - Python Client
+For more information, visit https://studio.skylabtech.ai
 """
 
 from distutils.core import setup
@@ -10,15 +10,15 @@ with open('README.md') as fp:
     LONG_DESCRIPTION = fp.read()
 
 setup(
-    name='skylab_genesis',
+    name='skylab_studio',
     version='1.0.0',
     author='skylabtech',
     author_email='info@skylabtech.ai',
     packages=find_packages(),
     scripts=[],
-    url='https://github.com/skylab-tech/genesis_client_python',
+    url='https://github.com/skylab-tech/studio_client_python',
     license='LICENSE.txt',
-    description='Skylab Genesis python client',
+    description='Skylab Studio python client',
     long_description=LONG_DESCRIPTION,
     test_suite="skylabtech.test",
     install_requires=[

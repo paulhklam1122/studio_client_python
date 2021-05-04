@@ -31,14 +31,14 @@ jobs:
       - run:
           name: Lint
           command: |
-            python -m pylint --rcfile=~/repo/.pylintrc ~/repo/skylab_genesis/ ~/repo/test/*
+            python -m pylint --rcfile=~/repo/.pylintrc ~/repo/skylab_studio/ ~/repo/test/*
 
       # Unit tests
       - run:
           name: run tests
           command: |
             ./tmp/cc-test-reporter before-build
-            python -m pytest --cov-report xml --cov=skylab_genesis
+            python -m pytest --cov-report xml --cov=skylab_studio
             ./tmp/cc-test-reporter after-build --coverage-input-type coverage.py --exit-code $?
 
 workflows:
