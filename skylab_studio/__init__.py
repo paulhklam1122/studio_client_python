@@ -6,6 +6,7 @@ For more information, visit https://studio.skylabtech.ai
 import json
 import logging
 import requests
+import os
 
 from .version import VERSION
 
@@ -31,15 +32,19 @@ class api: #pylint: disable=invalid-name
         debug (boolean): Whether or not to allow debugging information to be printed.
     """
 
-    api_proto = 'https'
-    api_port = '443'
-    api_host = 'studio.skylabtech.ai'
+    api_proto = 'http'
+    # api_proto = 'https'
+    # api_port = '443'
+    api_port = '3000'
+    # api_host = 'studio-staging.skylabtech.ai'
+    api_host = 'localhost'
     api_version = '1'
     api_key = 'THIS_IS_A_TEST_API_KEY'
 
     debug = False
 
     def __init__(self, api_key=None, **kwargs):
+        print('kwargs', kwargs)
         if not api_key:
             raise Exception("You must specify an api key")
 
@@ -65,8 +70,8 @@ class api: #pylint: disable=invalid-name
     def _build_http_auth(self):
         return (self.api_key, '')
 
-    @staticmethod
-    def _build_request_headers():
+    # @staticmethod
+    def _build_request_headers(self):
         client_header = '%s-%s' % (
             'python',
             VERSION
@@ -74,6 +79,7 @@ class api: #pylint: disable=invalid-name
 
         headers = {
             API_HEADER_CLIENT: client_header,
+            'X-SLT-API-KEY': self.api_key,
             'Content-type': 'application/json',
             'Accept': 'text/plain'
         }
@@ -81,7 +87,7 @@ class api: #pylint: disable=invalid-name
         return headers
 
     def _build_request_path(self, endpoint):
-        path = '/api/v%s/%s' % (self.api_version, endpoint)
+        path = '/api/public/v%s/%s' % (self.api_version, endpoint)
 
         path = "%s://%s:%s%s" % (
             self.api_proto,
@@ -103,8 +109,6 @@ class api: #pylint: disable=invalid-name
         """Private method for api requests"""
         LOGGER.debug(' > Sending API request to endpoint: %s', endpoint)
 
-        auth = self._build_http_auth()
-
         headers = self._build_request_headers()
         LOGGER.debug('\theaders: %s', headers)
 
@@ -117,7 +121,6 @@ class api: #pylint: disable=invalid-name
         LOGGER.debug('\tdata: %s', data)
 
         req_kw = dict(
-            auth=auth,
             headers=headers,
         )
 
@@ -131,7 +134,7 @@ class api: #pylint: disable=invalid-name
         elif http_method == 'DELETE':
             response = requests.delete(path, **req_kw)
         else:
-            response = requests.get(path, **req_kw)
+            response = requests.get(path, data=data, **req_kw)
 
         LOGGER.debug('\tresponse code:%s', response.status_code)
 
@@ -164,12 +167,38 @@ class api: #pylint: disable=invalid-name
             'GET'
         )
 
+    def get_job_by_name(self, payload=None):
+        return self._api_request(
+            'jobs/find_by_name',
+            'GET',
+            payload=payload
+        )
+
     def update_job(self, job_id, payload=None):
         """ API call to update a specific job """
         return self._api_request(
             'jobs/%s' % job_id,
             'PUT',
             payload=payload
+        )
+    
+    def update_job_callback_url(self):
+        return self._api_request(
+            'jobs/job_callback_url',
+            'PATCH'
+        )
+
+    def queue_job(self, job_id, payload=None):
+        return self._api_request(
+            'jobs/%s/queue' % job_id,
+            'POST',
+            payload=payload
+        )
+    
+    def fetch_jobs_in_front(self, job_id):
+        return self._api_request(
+            'jobs/%s/jobs_in_front' % job_id,
+            'GET',
         )
 
     def delete_job(self, job_id):
@@ -223,13 +252,6 @@ class api: #pylint: disable=invalid-name
             payload=payload
         )
 
-    def delete_profile(self, profile_id):
-        """ API call to delete a specific profile """
-        return self._api_request(
-            'profiles/%s' % profile_id,
-            'DELETE'
-        )
-
     def list_photos(self):
         """ API call to get all photos """
         return self._api_request(
@@ -244,6 +266,45 @@ class api: #pylint: disable=invalid-name
             'POST',
             payload=payload
         )
+
+    def upload_photo(self, photo_path, model, id, skip_cache=False):
+
+        photo_name = os.path.basename(photo_path)
+
+        # Read file contents to binary
+        data = open(photo_path, "rb")
+
+        if skip_cache and model == 'job':
+          payload = {
+              "skip_cache": skip_cache,
+              "job_id": id,
+              "photo_name": photo_name
+          }
+
+          # Ask studio for a presigned url
+          upload_url_resp = self._api_request('photos/upload_url', 'GET', payload=payload)
+          # return upload_url_resp
+          photo_data = {f"{model}_id": id, "name": photo_name }
+        else:
+          # Ask studio for a presigned url + key
+          upload_url_resp = self._api_request('photos/upload_url', 'GET')
+          key = upload_url_resp.json()['key']
+
+          if not key:
+            raise Exception('Unable to obtain upload key')
+
+          # model - either job or profile (job_id/profile_id)
+          photo_data = { "key": key, f"{model}_id": id, "name": photo_name }
+
+        upload_url = upload_url_resp.json()['url']
+        if not upload_url:
+          raise Exception('Unable to obtain upload_url')
+        # PUT request to presigned url with image data
+        # todo handle upload_request not returning 200
+        requests.put(upload_url, data)
+
+        # Ask studio to create the photo record
+        return self.create_photo(photo_data)
 
     def get_photo(self, photo_id):
         """ API call to get a specific photo """
