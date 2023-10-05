@@ -30,18 +30,24 @@ class api: #pylint: disable=invalid-name
         api_version (str): The API endpoint version number.
         api_key (str): The API key to use.
         debug (boolean): Whether or not to allow debugging information to be printed.
+        hmac (boolean): Whether or not to use hmac authentication
     """
 
-    api_proto = 'http'
+    # staging
     # api_proto = 'https'
     # api_port = '443'
-    api_port = '3000'
     # api_host = 'studio-staging.skylabtech.ai'
+
+    # development
+    api_proto = 'http'
+    api_port = '3000'
     api_host = 'localhost'
+
     api_version = '1'
     api_key = 'THIS_IS_A_TEST_API_KEY'
 
     debug = False
+    hmac = False
 
     def __init__(self, api_key=None, **kwargs):
         print('kwargs', kwargs)
@@ -60,6 +66,8 @@ class api: #pylint: disable=invalid-name
             self.api_version = kwargs['api_version']
         if 'debug' in kwargs:
             self.debug = kwargs['debug']
+        if 'hmac' in kwargs:
+            self.hmac = kwargs['hmac']
 
         if self.debug:
             logging.basicConfig(format='%(asctime)-15s %(message)s', level=logging.DEBUG)
@@ -270,47 +278,75 @@ class api: #pylint: disable=invalid-name
     def upload_photo(self, photo_path, model, id, skip_cache=False):
 
         photo_name = os.path.basename(photo_path)
+        # create photo
+        # upload retry w/ backoff
+        # handle upload error
 
         # Read file contents to binary
         data = open(photo_path, "rb")
 
+        # model - either job or profile (job_id/profile_id)
+        photo_data = { f"{model}_id": id, "name": photo_name }
+
         if skip_cache and model == 'job':
+
+          photo_data['skip_cache'] = skip_cache
+
+          # Ask studio to create the photo record
+          photo_resp = self.create_photo(photo_data)
+          core_job_id = photo_resp.json()['coreJobId']
+          print('PHOTO RESP', photo_resp.json())
+
           payload = {
               "skip_cache": skip_cache,
               "job_id": id,
-              "photo_name": photo_name
+              "photo_name": photo_name,
+              "core_job_id": core_job_id
           }
 
           # Ask studio for a presigned url
           upload_url_resp = self._api_request('photos/upload_url', 'GET', payload=payload)
-          # return upload_url_resp
-          photo_data = {f"{model}_id": id, "name": photo_name }
+          upload_url = upload_url_resp.json()['url']
         else:
           # Ask studio for a presigned url + key
           upload_url_resp = self._api_request('photos/upload_url', 'GET')
           key = upload_url_resp.json()['key']
+          upload_url = upload_url_resp.json()['url']
 
           if not key:
             raise Exception('Unable to obtain upload key')
 
-          # model - either job or profile (job_id/profile_id)
-          photo_data = { "key": key, f"{model}_id": id, "name": photo_name }
+          if not upload_url:
+            raise Exception('Unable to obtain upload_url')
 
-        upload_url = upload_url_resp.json()['url']
-        if not upload_url:
-          raise Exception('Unable to obtain upload_url')
+          photo_data['key'] = key
+
+          return self.create_photo(photo_data)
+
         # PUT request to presigned url with image data
         # todo handle upload_request not returning 200
-        requests.put(upload_url, data)
+        return requests.put(upload_url, data)
 
-        # Ask studio to create the photo record
-        return self.create_photo(photo_data)
 
     def get_photo(self, photo_id):
         """ API call to get a specific photo """
         return self._api_request(
             'photos/%s' % photo_id,
             'GET'
+        )
+
+    def get_job_photos(self, job_identifier, value):
+        """
+          job identifier - either id or name
+          value - the actual job_id or job_name
+        """
+        payload = {
+            f"job_{job_identifier}": value
+        }
+        return self._api_request(
+            'photos/list_for_job',
+            'GET',
+            payload=payload
         )
 
     def update_photo(self, photo_id, payload=None):

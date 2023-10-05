@@ -55,7 +55,7 @@ For all payload options, consult the [API documentation](http://docs.studio.skyl
 #### Get job
 
 ```python
-api.get_job(job_id=1)
+api.get_job(job_id)
 ```
 
 #### Update job
@@ -65,7 +65,7 @@ payload = {
   'profile_id': 2
 }
 
-api.create_job(job_id=1, payload=payload)
+api.create_job(job_id, payload=payload)
 ```
 
 For all payload options, consult the [API documentation](http://docs.studio.skylabtech.ai/#operation/updateJobById).
@@ -73,19 +73,19 @@ For all payload options, consult the [API documentation](http://docs.studio.skyl
 #### Delete job
 
 ```python
-api.delete_job(job_id=1)
+api.delete_job(job_id)
 ```
 
 #### Process job
 
 ```python
-api.process_job(job_id=1)
+api.process_job(job_id)
 ```
 
 #### Cancel job
 
 ```python
-api.cancel_job(job_id=1)
+api.cancel_job(job_id)
 ```
 
 #### List all profiles
@@ -124,12 +124,6 @@ api.create_profile(profile_id=1, payload=payload)
 
 For all payload options, consult the [API documentation](http://docs.studio.skylabtech.ai/#operation/updateProfileById).
 
-#### Delete profile
-
-```python
-api.delete_profile(profile_id=1)
-```
-
 #### List all photos
 
 ```python
@@ -151,7 +145,15 @@ For all payload options, consult the [API documentation](http://docs.studio.skyl
 #### Get photo
 
 ```python
-api.get_photo(photo_id=1)
+api.get_photo(photo_id)
+```
+
+#### Upload photo
+
+upload_photo(photo_path, model, model_id, skip_cache=False)
+
+```python
+api.upload_photo('/path/to/photo', 'job', job_id)
 ```
 
 #### Update photo
@@ -161,7 +163,7 @@ payload = {
   'image': 'some-base64-string'
 }
 
-api.create_photo(photo_id=1, payload=payload)
+api.create_photo(photo_id, payload=payload)
 ```
 
 For all payload options, consult the [API documentation](http://docs.studio.skylabtech.ai/#operation/updatePhotoById).
@@ -169,7 +171,7 @@ For all payload options, consult the [API documentation](http://docs.studio.skyl
 #### Delete photo
 
 ```python
-api.delete_photo(photo_id=1)
+api.delete_photo(photo_id)
 ```
 
 ### Expected Responses
@@ -196,7 +198,7 @@ api.delete_photo(photo_id=1)
 
 ```bash
     >>> response.status_code
-    400
+    422
 ```
 
 - Bad API key
