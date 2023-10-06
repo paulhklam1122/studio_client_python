@@ -333,7 +333,7 @@ class api: #pylint: disable=invalid-name
             upload_photo_resp = requests.put(upload_url, data)
             if upload_photo_resp.status_code is not 200:
                 if retry == 2:  # Check if retry count is 2 (0-based indexing):
-                    raise Exception('Unable to get upload_url from studio after retrying.')
+                    raise Exception('Unable to upload to bucket after retrying.')
 
                 time.sleep(1)
                 retry += 1
