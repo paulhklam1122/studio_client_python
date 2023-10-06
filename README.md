@@ -109,7 +109,7 @@ For all payload options, consult the [API documentation](http://docs.studio.skyl
 #### Get profile
 
 ```python
-api.get_profile(profile_id=1)
+api.get_profile(profile_id)
 ```
 
 #### Update profile
@@ -119,7 +119,7 @@ payload = {
   'name': 'My profile'
 }
 
-api.create_profile(profile_id=1, payload=payload)
+api.create_profile(profile_id, payload=payload)
 ```
 
 For all payload options, consult the [API documentation](http://docs.studio.skylabtech.ai/#operation/updateProfileById).
@@ -150,7 +150,15 @@ api.get_photo(photo_id)
 
 #### Upload photo
 
+<<<<<<< HEAD
 upload_photo(photo_path, model, model_id, skip_cache=False)
+=======
+##### upload_photo(photo_path, model, model_id, skip_cache=False)
+
+model can either be 'job' or 'profile'
+
+model_id is the jobs/profiles respective id
+>>>>>>> 2ff16d9 (SCP-1 remove circle yml, and added backoff for photo upload to aws failure)
 
 ```python
 api.upload_photo('/path/to/photo', 'job', job_id)

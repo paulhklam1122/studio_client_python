@@ -7,6 +7,7 @@ import json
 import logging
 import requests
 import os
+import time
 
 from .version import VERSION
 
@@ -295,7 +296,6 @@ class api: #pylint: disable=invalid-name
           # Ask studio to create the photo record
           photo_resp = self.create_photo(photo_data)
           core_job_id = photo_resp.json()['coreJobId']
-          print('PHOTO RESP', photo_resp.json())
 
           payload = {
               "skip_cache": skip_cache,
@@ -321,11 +321,24 @@ class api: #pylint: disable=invalid-name
 
           photo_data['key'] = key
 
-          return self.create_photo(photo_data)
+          self.create_photo(photo_data)
 
         # PUT request to presigned url with image data
-        # todo handle upload_request not returning 200
-        return requests.put(upload_url, data)
+        upload_photo_resp = requests.put(upload_url, data)
+
+        if upload_photo_resp.status_code is not 200:
+          retry = 0
+          # retry upload
+          while retry < 3:
+            upload_photo_resp = requests.put(upload_url, data)
+            if upload_photo_resp.status_code is not 200:
+                if retry == 2:  # Check if retry count is 2 (0-based indexing):
+                    raise Exception('Unable to get upload_url from studio after retrying.')
+
+                time.sleep(1)
+                retry += 1
+
+        return upload_photo_resp
 
 
     def get_photo(self, photo_id):
