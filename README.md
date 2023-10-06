@@ -150,15 +150,11 @@ api.get_photo(photo_id)
 
 #### Upload photo
 
-<<<<<<< HEAD
-upload_photo(photo_path, model, model_id, skip_cache=False)
-=======
 ##### upload_photo(photo_path, model, model_id, skip_cache=False)
 
 model can either be 'job' or 'profile'
 
 model_id is the jobs/profiles respective id
->>>>>>> 2ff16d9 (SCP-1 remove circle yml, and added backoff for photo upload to aws failure)
 
 ```python
 api.upload_photo('/path/to/photo', 'job', job_id)
