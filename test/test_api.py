@@ -3,16 +3,14 @@ Tests for SkylabStudio - Python Client
 """
 
 import pytest
-import requests_mock
 import requests
 import uuid
-import logging
+from decouple import config
+
 
 import skylab_studio
 
 #pylint: disable=redefined-outer-name
-
-# base_url = 'https://studio-staging.skylabtech.ai:443'
 
 job_id = 0
 profile_id = 0
@@ -20,10 +18,8 @@ photo_id = 0
 
 @pytest.fixture
 def api_key():
-    """ Returns a fake API key. """
-    # staging
-    # return '8QazqWzV3qWxkR8wykKr1Y4z'
-    return '16V7LPczUNXb6cdY7V15G5s5'
+    # Get desired api key
+    return config('API_KEY')
 
 @pytest.fixture
 def api_options():
@@ -164,28 +160,28 @@ def test_create_photo(api):
     }
 
     result = api.create_photo(payload=payload)
+    photo_id = result.json()['id']
+    assert photo_id is not 0
     assert result.status_code == 201
 
-# def test_get_photo(api):
-#     """ Test list photos endpoint. """
-#     with requests_mock.Mocker() as mock:
-#         mock.get('https://studio-staging.skylabtech.ai:443/api/public/v1/photos/1', text='data')
-#         result = api.get_photo(photo_id=1)
-#         assert result.status_code == 200
+def test_get_photo(api):
+    global photo_id
+    result = api.get_photo(photo_id)
+    assert result.status_code == 200
 
-# def test_update_photo(api):
-#     """ Test list photos endpoint. """
-#     with requests_mock.Mocker() as mock:
-#         mock.put('https://studio-staging.skylabtech.ai:443/api/public/v1/photos/1', text='data')
-#         payload = {
-#             'foo': 'bar'
-#         }
-#         result = api.update_photo(photo_id=1, payload=payload)
-#         assert result.status_code == 200
+def test_update_photo(api):
+    global photo_id
+    global job_id
 
-# def test_delete_photo(api):
-#     """ Test list photos endpoint. """
-#     with requests_mock.Mocker() as mock:
-#         mock.delete('https://studio-staging.skylabtech.ai:443/api/public/v1/photos/1', text='data')
-#         result = api.delete_photo(photo_id=1)
-#         assert result.status_code == 200
+    new_photo_name = str(uuid.uuid4())
+    payload = {
+        'name': new_photo_name,
+        'job_id': job_id
+    }
+    result = api.update_photo(photo_id, payload=payload)
+    assert result.status_code == 204
+
+def test_delete_photo(api):
+    global photo_id
+    result = api.delete_photo(photo_id)
+    assert result.status_code == 200
