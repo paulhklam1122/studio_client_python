@@ -51,7 +51,6 @@ class api: #pylint: disable=invalid-name
     hmac = False
 
     def __init__(self, api_key=None, **kwargs):
-        print('kwargs', kwargs)
         if not api_key:
             raise Exception("You must specify an api key")
 
@@ -203,7 +202,7 @@ class api: #pylint: disable=invalid-name
             'POST',
             payload=payload
         )
-    
+
     def fetch_jobs_in_front(self, job_id):
         return self._api_request(
             'jobs/%s/jobs_in_front' % job_id,
@@ -215,13 +214,6 @@ class api: #pylint: disable=invalid-name
         return self._api_request(
             'jobs/%s' % job_id,
             'DELETE'
-        )
-
-    def process_job(self, job_id):
-        """ API call to process a specific job """
-        return self._api_request(
-            'jobs/%s/process' % job_id,
-            'POST'
         )
 
     def cancel_job(self, job_id):
@@ -268,6 +260,9 @@ class api: #pylint: disable=invalid-name
             'GET'
         )
 
+    def get_upload_url(self, payload=None):
+      return self._api_request('photos/upload_url', 'GET', payload=payload)
+
     def create_photo(self, payload=None):
         """ API call to create a photo """
         return self._api_request(
@@ -276,12 +271,8 @@ class api: #pylint: disable=invalid-name
             payload=payload
         )
 
-    def upload_photo(self, photo_path, model, id, skip_cache=False):
-
+    def upload_photo(self, photo_path, model, id, skip_cache=True):
         photo_name = os.path.basename(photo_path)
-        # create photo
-        # upload retry w/ backoff
-        # handle upload error
 
         # Read file contents to binary
         data = open(photo_path, "rb")
@@ -305,11 +296,11 @@ class api: #pylint: disable=invalid-name
           }
 
           # Ask studio for a presigned url
-          upload_url_resp = self._api_request('photos/upload_url', 'GET', payload=payload)
+          upload_url_resp = self.get_upload_url(payload=payload)
           upload_url = upload_url_resp.json()['url']
         else:
           # Ask studio for a presigned url + key
-          upload_url_resp = self._api_request('photos/upload_url', 'GET')
+          upload_url_resp = self.get_upload_url()
           key = upload_url_resp.json()['key']
           upload_url = upload_url_resp.json()['url']
 
@@ -326,12 +317,12 @@ class api: #pylint: disable=invalid-name
         # PUT request to presigned url with image data
         upload_photo_resp = requests.put(upload_url, data)
 
-        if upload_photo_resp.status_code is not 200:
+        if upload_photo_resp.status_code != 200:
           retry = 0
           # retry upload
           while retry < 3:
             upload_photo_resp = requests.put(upload_url, data)
-            if upload_photo_resp.status_code is not 200:
+            if upload_photo_resp.status_code != 200:
                 if retry == 2:  # Check if retry count is 2 (0-based indexing):
                     raise Exception('Unable to upload to bucket after retrying.')
 
@@ -339,7 +330,6 @@ class api: #pylint: disable=invalid-name
                 retry += 1
 
         return upload_photo_resp
-
 
     def get_photo(self, photo_id):
         """ API call to get a specific photo """

@@ -76,12 +76,6 @@ For all payload options, consult the [API documentation](http://docs.studio.skyl
 api.delete_job(job_id)
 ```
 
-#### Process job
-
-```python
-api.process_job(job_id)
-```
-
 #### Cancel job
 
 ```python
@@ -150,7 +144,7 @@ api.get_photo(photo_id)
 
 #### Upload photo
 
-##### upload_photo(photo_path, model, model_id, skip_cache=False)
+##### upload_photo(photo_path, model, model_id, skip_cache=True)
 
 model can either be 'job' or 'profile'
 

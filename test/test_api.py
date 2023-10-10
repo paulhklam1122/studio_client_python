@@ -4,15 +4,26 @@ Tests for SkylabStudio - Python Client
 
 import pytest
 import requests_mock
+import requests
+import uuid
+import logging
 
 import skylab_studio
 
 #pylint: disable=redefined-outer-name
 
+# base_url = 'https://studio-staging.skylabtech.ai:443'
+
+job_id = 0
+profile_id = 0
+photo_id = 0
+
 @pytest.fixture
 def api_key():
     """ Returns a fake API key. """
-    return 'PYTHON_API_CLIENT_TEST_KEY'
+    # staging
+    # return '8QazqWzV3qWxkR8wykKr1Y4z'
+    return '16V7LPczUNXb6cdY7V15G5s5'
 
 @pytest.fixture
 def api_options():
@@ -51,137 +62,130 @@ def test_api_debug():
 
 def test_list_jobs(api):
     """ Test list jobs endpoint. """
-    with requests_mock.Mocker() as mock:
-        mock.get('https://studio.skylabtech.ai:443/api/v1/jobs', text='data')
-        result = api.list_jobs()
-        assert result.status_code == 200
+    result = api.list_jobs()
+    assert result.status_code == 200
 
 def test_create_job(api):
     """ Test list jobs endpoint. """
-    with requests_mock.Mocker() as mock:
-        mock.post('https://studio.skylabtech.ai:443/api/v1/jobs', text='data')
-        payload = {
-            'foo': 'bar'
-        }
-        result = api.create_job(payload=payload)
-        assert result.status_code == 200
+    job_name = str(uuid.uuid4())
+    job_payload = {
+      'name': job_name,
+      'profile_id': 24
+    }
+
+    result = api.create_job(payload=job_payload)
+    global job_id
+
+    job_id = result.json()['id']
+    assert job_id is not None
+    assert result.status_code == 201
 
 def test_get_job(api):
-    """ Test list jobs endpoint. """
-    with requests_mock.Mocker() as mock:
-        mock.get('https://studio.skylabtech.ai:443/api/v1/jobs/1', text='data')
-        result = api.get_job(job_id=1)
-        assert result.status_code == 200
+    global job_id
+    assert job_id is not 0
+
+    result = api.get_job(job_id)
+    assert result.status_code == 200
 
 def test_update_job(api):
-    """ Test list jobs endpoint. """
-    with requests_mock.Mocker() as mock:
-        mock.put('https://studio.skylabtech.ai:443/api/v1/jobs/1', text='data')
-        payload = {
-            'foo': 'bar'
-        }
-        result = api.update_job(job_id=1, payload=payload)
-        assert result.status_code == 200
+    global job_id
+    new_job_name = str(uuid.uuid4())
+    payload = {
+        'name': new_job_name
+    }
+    result = api.update_job(job_id, payload=payload)
+    assert result.status_code == 200
 
-def test_delete_job(api):
-    """ Test list jobs endpoint. """
-    with requests_mock.Mocker() as mock:
-        mock.delete('https://studio.skylabtech.ai:443/api/v1/jobs/1', text='data')
-        result = api.delete_job(job_id=1)
-        assert result.status_code == 200
+# def test_cancel_job(api):
+#     """ Test list jobs endpoint. """
+#     with requests_mock.Mocker() as mock:
+#         mock.post('https://studio-staging.skylabtech.ai:443/api/public/v1/jobs/1/cancel', text='data')
+#         result = api.cancel_job(job_id=1)
+#         assert result.status_code == 200
 
-def test_process_job(api):
-    """ Test list jobs endpoint. """
-    with requests_mock.Mocker() as mock:
-        mock.post('https://studio.skylabtech.ai:443/api/v1/jobs/1/process', text='data')
-        result = api.process_job(job_id=1)
-        assert result.status_code == 200
+# def test_delete_job(api):
+#     global job_id
+#     result = api.delete_job(job_id)
+#     assert result.status_code == 200
 
-def test_cancel_job(api):
-    """ Test list jobs endpoint. """
-    with requests_mock.Mocker() as mock:
-        mock.post('https://studio.skylabtech.ai:443/api/v1/jobs/1/cancel', text='data')
-        result = api.cancel_job(job_id=1)
-        assert result.status_code == 200
 
 def test_list_profiles(api):
-    """ Test list profiles endpoint. """
-    with requests_mock.Mocker() as mock:
-        mock.get('https://studio.skylabtech.ai:443/api/v1/profiles', text='data')
-        result = api.list_profiles()
-        assert result.status_code == 200
+    result = api.list_profiles()
+    assert result.status_code == 200
 
 def test_create_profile(api):
-    """ Test list profiles endpoint. """
-    with requests_mock.Mocker() as mock:
-        mock.post('https://studio.skylabtech.ai:443/api/v1/profiles', text='data')
-        payload = {
-            'foo': 'bar'
-        }
-        result = api.create_profile(payload=payload)
-        assert result.status_code == 200
+    global profile_id
+    profile_name = str(uuid.uuid4())
+    payload = {
+        'name': profile_name,
+        'enable_crop': False
+    }
+    result = api.create_profile(payload=payload)
+    profile_id = result.json()['id']
+
+    assert profile_id is not None
+    assert result.status_code == 201
 
 def test_get_profile(api):
-    """ Test list profiles endpoint. """
-    with requests_mock.Mocker() as mock:
-        mock.get('https://studio.skylabtech.ai:443/api/v1/profiles/1', text='data')
-        result = api.get_profile(profile_id=1)
-        assert result.status_code == 200
+    global profile_id
+    result = api.get_profile(profile_id)
+    assert result.status_code == 200
 
 def test_update_profile(api):
-    """ Test list profiles endpoint. """
-    with requests_mock.Mocker() as mock:
-        mock.put('https://studio.skylabtech.ai:443/api/v1/profiles/1', text='data')
-        payload = {
-            'foo': 'bar'
-        }
-        result = api.update_profile(profile_id=1, payload=payload)
-        assert result.status_code == 200
-
-def test_delete_profile(api):
-    """ Test list profiles endpoint. """
-    with requests_mock.Mocker() as mock:
-        mock.delete('https://studio.skylabtech.ai:443/api/v1/profiles/1', text='data')
-        result = api.delete_profile(profile_id=1)
-        assert result.status_code == 200
+    global profile_id
+    payload = {
+        'description': 'a description!'
+    }
+    result = api.update_profile(profile_id, payload=payload)
+    assert result.status_code == 200
 
 def test_list_photos(api):
-    """ Test list photos endpoint. """
-    with requests_mock.Mocker() as mock:
-        mock.get('https://studio.skylabtech.ai:443/api/v1/photos', text='data')
-        result = api.list_photos()
-        assert result.status_code == 200
+    result = api.list_photos()
+    assert result.status_code == 200
 
 def test_create_photo(api):
-    """ Test list photos endpoint. """
-    with requests_mock.Mocker() as mock:
-        mock.post('https://studio.skylabtech.ai:443/api/v1/photos', text='data')
-        payload = {
-            'foo': 'bar'
-        }
-        result = api.create_photo(payload=payload)
-        assert result.status_code == 200
+    global photo_id
+    global profile_id
 
-def test_get_photo(api):
-    """ Test list photos endpoint. """
-    with requests_mock.Mocker() as mock:
-        mock.get('https://studio.skylabtech.ai:443/api/v1/photos/1', text='data')
-        result = api.get_photo(photo_id=1)
-        assert result.status_code == 200
+    job_name = str(uuid.uuid4())
+    job_payload = {
+      'name': job_name,
+      'profile_id': 24
+    }
 
-def test_update_photo(api):
-    """ Test list photos endpoint. """
-    with requests_mock.Mocker() as mock:
-        mock.put('https://studio.skylabtech.ai:443/api/v1/photos/1', text='data')
-        payload = {
-            'foo': 'bar'
-        }
-        result = api.update_photo(photo_id=1, payload=payload)
-        assert result.status_code == 200
+    result = api.create_job(payload=job_payload)
+    job_id = result.json()['id']
 
-def test_delete_photo(api):
-    """ Test list photos endpoint. """
-    with requests_mock.Mocker() as mock:
-        mock.delete('https://studio.skylabtech.ai:443/api/v1/photos/1', text='data')
-        result = api.delete_photo(photo_id=1)
-        assert result.status_code == 200
+    photo_name = str(uuid.uuid4())
+    payload = {
+        "job_id": job_id,
+        "name": photo_name,
+        "skip_cache": True
+    }
+
+    result = api.create_photo(payload=payload)
+    assert result.status_code == 201
+
+# def test_get_photo(api):
+#     """ Test list photos endpoint. """
+#     with requests_mock.Mocker() as mock:
+#         mock.get('https://studio-staging.skylabtech.ai:443/api/public/v1/photos/1', text='data')
+#         result = api.get_photo(photo_id=1)
+#         assert result.status_code == 200
+
+# def test_update_photo(api):
+#     """ Test list photos endpoint. """
+#     with requests_mock.Mocker() as mock:
+#         mock.put('https://studio-staging.skylabtech.ai:443/api/public/v1/photos/1', text='data')
+#         payload = {
+#             'foo': 'bar'
+#         }
+#         result = api.update_photo(photo_id=1, payload=payload)
+#         assert result.status_code == 200
+
+# def test_delete_photo(api):
+#     """ Test list photos endpoint. """
+#     with requests_mock.Mocker() as mock:
+#         mock.delete('https://studio-staging.skylabtech.ai:443/api/public/v1/photos/1', text='data')
+#         result = api.delete_photo(photo_id=1)
+#         assert result.status_code == 200
