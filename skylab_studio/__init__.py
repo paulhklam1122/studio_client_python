@@ -271,7 +271,7 @@ class api: #pylint: disable=invalid-name
             payload=payload
         )
 
-    def upload_photo(self, photo_path, model, id, skip_cache=True):
+    def upload_photo(self, photo_path, model, id, use_cache_upload=False):
         photo_name = os.path.basename(photo_path)
 
         # Read file contents to binary
@@ -280,39 +280,42 @@ class api: #pylint: disable=invalid-name
         # model - either job or profile (job_id/profile_id)
         photo_data = { f"{model}_id": id, "name": photo_name }
 
-        if skip_cache and model == 'job':
+        if not use_cache_upload and model == 'job':
 
-          photo_data['skip_cache'] = skip_cache
+            photo_data['use_cache_upload'] = use_cache_upload
 
-          # Ask studio to create the photo record
-          photo_resp = self.create_photo(photo_data)
-          core_job_id = photo_resp.json()['coreJobId']
+            # Ask studio to create the photo record
+            photo_resp = self.create_photo(photo_data)
+            core_job_id = photo_resp.json()['coreJobId']
 
-          payload = {
-              "skip_cache": skip_cache,
-              "job_id": id,
-              "photo_name": photo_name,
-              "core_job_id": core_job_id
-          }
+            payload = {
+                "use_cache_upload": use_cache_upload,
+                "job_id": id,
+                "photo_name": photo_name,
+                "core_job_id": core_job_id
+            }
 
-          # Ask studio for a presigned url
-          upload_url_resp = self.get_upload_url(payload=payload)
-          upload_url = upload_url_resp.json()['url']
+            # Ask studio for a presigned url
+            upload_url_resp = self.get_upload_url(payload=payload)
+            upload_url = upload_url_resp.json()['url']
+
         else:
-          # Ask studio for a presigned url + key
-          upload_url_resp = self.get_upload_url()
-          key = upload_url_resp.json()['key']
-          upload_url = upload_url_resp.json()['url']
+            payload = {
+                "use_cache_upload": use_cache_upload
+            }
+            # Ask studio for a presigned url + key
+            upload_url_resp = self.get_upload_url(payload=payload)
 
-          if not key:
-            raise Exception('Unable to obtain upload key')
+            key = upload_url_resp.json()['key']
+            upload_url = upload_url_resp.json()['url']
 
-          if not upload_url:
-            raise Exception('Unable to obtain upload_url')
+            if not key:
+              raise Exception('Unable to obtain upload key')
 
-          photo_data['key'] = key
+            if not upload_url:
+              raise Exception('Unable to obtain upload_url')
 
-          self.create_photo(photo_data)
+            photo_data['key'] = key
 
         # PUT request to presigned url with image data
         upload_photo_resp = requests.put(upload_url, data)
@@ -328,6 +331,12 @@ class api: #pylint: disable=invalid-name
 
                 time.sleep(1)
                 retry += 1
+
+        if use_cache_upload:
+          photo_creation_req = self.create_photo(photo_data)
+
+          if photo_creation_req.status_code != 201:
+              raise Exception(photo_creation_req.json()['errors'])
 
         return upload_photo_resp
 
