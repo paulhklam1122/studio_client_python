@@ -7,7 +7,7 @@ import requests
 import requests_mock
 import uuid
 import os
-from . import skylab_studio
+from ..skylab_studio import skylab_studio
 
 #pylint: disable=redefined-outer-name
 
