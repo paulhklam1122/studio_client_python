@@ -4,9 +4,9 @@ Tests for SkylabStudio - Python Client
 
 import pytest
 import requests
+import requests_mock
 import uuid
 from decouple import config
-
 
 import skylab_studio
 
@@ -92,17 +92,30 @@ def test_update_job(api):
     result = api.update_job(job_id, payload=payload)
     assert result.status_code == 200
 
-# def test_cancel_job(api):
-#     """ Test list jobs endpoint. """
-#     with requests_mock.Mocker() as mock:
-#         mock.post('https://studio-staging.skylabtech.ai:443/api/public/v1/jobs/1/cancel', text='data')
-#         result = api.cancel_job(job_id=1)
-#         assert result.status_code == 200
+def test_cancel_job(api):
+    job_name = str(uuid.uuid4())
+    job_payload = {
+      'name': job_name,
+      'profile_id': 24
+    }
 
-# def test_delete_job(api):
-#     global job_id
-#     result = api.delete_job(job_id)
-#     assert result.status_code == 200
+    result = api.create_job(payload=job_payload)
+    job_id = result.json()['id']
+    job_cancel_result = api.cancel_job(job_id)
+    assert job_cancel_result.status_code == 200
+
+def test_delete_job(api):
+    job_name = str(uuid.uuid4())
+    job_payload = {
+      'name': job_name,
+      'profile_id': 24
+    }
+
+    result = api.create_job(payload=job_payload)
+    job_id = result.json()['id']
+
+    result = api.delete_job(job_id)
+    assert result.status_code == 200
 
 
 def test_list_profiles(api):
@@ -156,11 +169,12 @@ def test_create_photo(api):
     payload = {
         "job_id": job_id,
         "name": photo_name,
-        "skip_cache": True
+        "use_cache_upload": False
     }
 
-    result = api.create_photo(payload=payload)
-    photo_id = result.json()['id']
+    photo_result = api.create_photo(payload=payload)
+    photo_id = photo_result.json()['id']
+
     assert photo_id is not 0
     assert result.status_code == 201
 
