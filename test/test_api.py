@@ -6,8 +6,7 @@ import pytest
 import requests
 import requests_mock
 import uuid
-from decouple import config
-
+import os
 import skylab_studio
 
 #pylint: disable=redefined-outer-name
@@ -19,7 +18,8 @@ photo_id = 0
 @pytest.fixture
 def api_key():
     # Get desired api key
-    return config('API_KEY')
+    return os.environ.get('PY_SDK_DEV_KEY')
+    # return os.environ.get('PY_SDK_STAGING_KEY')
 
 @pytest.fixture
 def api_options():
