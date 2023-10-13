@@ -42,6 +42,8 @@ class api: #pylint: disable=invalid-name
     api_version = '1'
     api_key = 'THIS_IS_A_TEST_API_KEY'
 
+    print("STUFF", api_proto, api_port, api_host)
+
     debug = False
 
     def __init__(self, api_key=None, **kwargs):

@@ -36,4 +36,4 @@ jobs:
           pip install -e .
 
       - name: Run pytest
-        run: pytest test/test_api.py
+        run: pytest -s test/test_api.py
