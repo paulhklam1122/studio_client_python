@@ -31,7 +31,6 @@ class api: #pylint: disable=invalid-name
         api_version (str): The API endpoint version number.
         api_key (str): The API key to use.
         debug (boolean): Whether or not to allow debugging information to be printed.
-        hmac (boolean): Whether or not to use hmac authentication
     """
 
     # staging
@@ -48,7 +47,6 @@ class api: #pylint: disable=invalid-name
     api_key = 'THIS_IS_A_TEST_API_KEY'
 
     debug = False
-    hmac = False
 
     def __init__(self, api_key=None, **kwargs):
         if not api_key:
@@ -66,8 +64,6 @@ class api: #pylint: disable=invalid-name
             self.api_version = kwargs['api_version']
         if 'debug' in kwargs:
             self.debug = kwargs['debug']
-        if 'hmac' in kwargs:
-            self.hmac = kwargs['hmac']
 
         if self.debug:
             logging.basicConfig(format='%(asctime)-15s %(message)s', level=logging.DEBUG)
