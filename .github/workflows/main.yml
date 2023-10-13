@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: true
     env:
-      API_KEY: ${{ secrets.PY_SDK_STAGING_KEY }}
+      PY_SDK_STAGING_KEY: ${{ secrets.PY_SDK_STAGING_KEY }}
 
     steps:
       - name: Checkout code
