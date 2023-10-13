@@ -30,7 +30,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install -e skylab_studio
+          pip install -e .
 
       - name: Run pytest
         run: pytest test/test_api.py
