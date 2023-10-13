@@ -8,7 +8,6 @@ import logging
 import requests
 import os
 import time
-from decouple import config
 
 from .version import VERSION
 
@@ -39,6 +38,7 @@ class api: #pylint: disable=invalid-name
     api_port = os.environ['API_PORT']
     api_host = os.environ['API_HOST']
 
+    # this is not package version -> used to construct the request base url
     api_version = '1'
     api_key = 'THIS_IS_A_TEST_API_KEY'
 
