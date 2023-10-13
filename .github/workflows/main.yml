@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: true
     env:
-      API_KEY: ${{ secrets.API_KEY }}
+      API_KEY: ${{ secrets.PY_SDK_STAGING_KEY }}
 
     steps:
       - name: Checkout code
@@ -30,6 +30,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install -e skylab_studio
 
       - name: Run pytest
         run: pytest test/test_api.py

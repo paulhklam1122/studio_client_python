@@ -35,14 +35,14 @@ class api: #pylint: disable=invalid-name
     """
 
     # staging
-    # api_proto = 'https'
-    # api_port = '443'
-    # api_host = 'studio-staging.skylabtech.ai'
+    api_proto = 'https'
+    api_port = '443'
+    api_host = 'studio-staging.skylabtech.ai'
 
     # development
-    api_proto = 'http'
-    api_port = '3000'
-    api_host = 'localhost'
+    # api_proto = 'http'
+    # api_port = '3000'
+    # api_host = 'localhost'
 
     api_version = '1'
     api_key = 'THIS_IS_A_TEST_API_KEY'
@@ -78,7 +78,7 @@ class api: #pylint: disable=invalid-name
     def _build_http_auth(self):
         return (self.api_key, '')
 
-    # @staticmethod
+    @staticmethod
     def _build_request_headers(self):
         client_header = '%s-%s' % (
             'python',
