@@ -8,6 +8,7 @@ import logging
 import requests
 import os
 import time
+from decouple import config
 
 from .version import VERSION
 
@@ -33,17 +34,12 @@ class api: #pylint: disable=invalid-name
         debug (boolean): Whether or not to allow debugging information to be printed.
     """
 
-    # staging
-    api_proto = 'https'
-    api_port = '443'
-    api_host = 'studio-staging.skylabtech.ai'
+    # initialization
+    api_proto = config('API_PROTO')
+    api_port = config('API_PORT')
+    api_host = config('API_HOST')
 
-    # development
-    # api_proto = 'http'
-    # api_port = '3000'
-    # api_host = 'localhost'
-
-    api_version = '1'
+    api_version = '0.0.1'
     api_key = 'THIS_IS_A_TEST_API_KEY'
 
     debug = False
