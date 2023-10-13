@@ -35,11 +35,11 @@ class api: #pylint: disable=invalid-name
     """
 
     # initialization
-    api_proto = config('API_PROTO')
-    api_port = config('API_PORT')
-    api_host = config('API_HOST')
+    api_proto = os.environ['API_PROTO']
+    api_port = os.environ['API_PORT']
+    api_host = os.environ['API_HOST']
 
-    api_version = '0.0.1'
+    api_version = '1'
     api_key = 'THIS_IS_A_TEST_API_KEY'
 
     debug = False
