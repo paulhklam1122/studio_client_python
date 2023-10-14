@@ -279,13 +279,12 @@ class api: #pylint: disable=invalid-name
 
             # Ask studio to create the photo record
             photo_resp = self.create_photo(photo_data)
-            core_job_id = photo_resp.json()['coreJobId']
+            # core_job_id = photo_resp.json()['coreJobId']
+            photo_id = photo_resp.json()['id']
 
             payload = {
                 "use_cache_upload": use_cache_upload,
-                "job_id": id,
-                "photo_name": photo_name,
-                "core_job_id": core_job_id
+                "photo_id": photo_id,
             }
 
             # Ask studio for a presigned url
