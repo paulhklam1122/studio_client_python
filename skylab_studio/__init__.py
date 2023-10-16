@@ -42,8 +42,6 @@ class api: #pylint: disable=invalid-name
     api_version = '1'
     api_key = 'THIS_IS_A_TEST_API_KEY'
 
-    print("STUFF", api_proto, api_port, api_host)
-
     debug = False
 
     def __init__(self, api_key=None, **kwargs):
@@ -279,7 +277,6 @@ class api: #pylint: disable=invalid-name
 
             # Ask studio to create the photo record
             photo_resp = self.create_photo(photo_data)
-            # core_job_id = photo_resp.json()['coreJobId']
             photo_id = photo_resp.json()['id']
 
             payload = {
