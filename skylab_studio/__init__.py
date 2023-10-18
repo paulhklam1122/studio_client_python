@@ -8,6 +8,9 @@ import logging
 import requests
 import os
 import time
+import hmac
+import base64
+import hashlib
 
 from .version import VERSION
 
@@ -364,3 +367,13 @@ class api: #pylint: disable=invalid-name
             'photos/%s' % photo_id,
             'DELETE'
         )
+
+    def validate_hmac_headers(self, secret_key, job_json, request_timestamp, signature):
+        message=f"{request_timestamp}:{job_json}".encode('utf-8')
+
+        # Create the HMAC signature using SHA-256
+        hmac_digest = hmac.new(secret_key.encode('utf-8'), message, hashlib.sha256).digest()
+        generated_sig = base64.b64encode(hmac_digest).decode('utf-8')
+
+        # Compare rails to python signature
+        return signature == generated_sig
