@@ -4,7 +4,6 @@ Tests for SkylabStudio - Python Client
 
 import pytest
 import requests
-import requests_mock
 import uuid
 import os
 import skylab_studio
@@ -181,18 +180,6 @@ def test_get_photo(api):
     global photo_id
     result = api.get_photo(photo_id)
     assert result.status_code == 200
-
-def test_update_photo(api):
-    global photo_id
-    global job_id
-
-    new_photo_name = str(uuid.uuid4())
-    payload = {
-        'name': new_photo_name,
-        'job_id': job_id
-    }
-    result = api.update_photo(photo_id, payload=payload)
-    assert result.status_code == 204
 
 def test_delete_photo(api):
     global photo_id

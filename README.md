@@ -70,6 +70,16 @@ api.create_job(job_id, payload=payload)
 
 For all payload options, consult the [API documentation](https://studio-docs.skylabtech.ai/#tag/job/operation/updateJobById).
 
+#### Queue job
+
+```python
+payload = {
+  "callback_url": "desired_callback_url"
+}
+
+api.queue_job(job_id, payload)
+```
+
 #### Delete job
 
 ```python
