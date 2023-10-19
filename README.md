@@ -50,7 +50,7 @@ payload = {
 api.create_job(payload=payload)
 ```
 
-For all payload options, consult the [API documentation](http://docs.studio.skylabtech.ai/#operation/createJob).
+For all payload options, consult the [API documentation](https://studio-docs.skylabtech.ai/#tag/job/operation/createJob).
 
 #### Get job
 
@@ -68,7 +68,7 @@ payload = {
 api.create_job(job_id, payload=payload)
 ```
 
-For all payload options, consult the [API documentation](http://docs.studio.skylabtech.ai/#operation/updateJobById).
+For all payload options, consult the [API documentation](https://studio-docs.skylabtech.ai/#tag/job/operation/updateJobById).
 
 #### Delete job
 
@@ -98,7 +98,7 @@ payload = {
 api.create_profile(payload=payload)
 ```
 
-For all payload options, consult the [API documentation](http://docs.studio.skylabtech.ai/#operation/createProfile).
+For all payload options, consult the [API documentation](https://studio-docs.skylabtech.ai/#tag/profile/operation/createProfile).
 
 #### Get profile
 
@@ -116,7 +116,7 @@ payload = {
 api.create_profile(profile_id, payload=payload)
 ```
 
-For all payload options, consult the [API documentation](http://docs.studio.skylabtech.ai/#operation/updateProfileById).
+For all payload options, consult the [API documentation](https://studio-docs.skylabtech.ai/#tag/profile/operation/updateProfileById).
 
 #### List all photos
 
@@ -124,17 +124,22 @@ For all payload options, consult the [API documentation](http://docs.studio.skyl
 api.list_photos()
 ```
 
+#### Get photo upload url
+
+Returns key for create photo
+
+```python
+api.get_upload_url()
+```
+
 #### Create photo
 
 ```python
-payload = {
-  'image': 'some-base64-string'
-}
 
 api.create_photo(payload=payload)
 ```
 
-For all payload options, consult the [API documentation](http://docs.studio.skylabtech.ai/#operation/createPhoto).
+For all payload options, consult the [API documentation](https://studio-docs.skylabtech.ai/#tag/photo/operation/createPhoto).
 
 #### Get photo
 
@@ -144,7 +149,7 @@ api.get_photo(photo_id)
 
 #### Upload photo
 
-##### upload_photo(photo_path, model, model_id, skip_cache=True)
+##### upload_photo(photo_path, model, model_id, use_cache_upload=False)
 
 model can either be 'job' or 'profile'
 
@@ -154,17 +159,11 @@ model_id is the jobs/profiles respective id
 api.upload_photo('/path/to/photo', 'job', job_id)
 ```
 
-#### Update photo
+OR
 
 ```python
-payload = {
-  'image': 'some-base64-string'
-}
-
-api.create_photo(photo_id, payload=payload)
+api.upload_photo('/path/to/photo', 'profile', profile_id)
 ```
-
-For all payload options, consult the [API documentation](http://docs.studio.skylabtech.ai/#operation/updatePhotoById).
 
 #### Delete photo
 
