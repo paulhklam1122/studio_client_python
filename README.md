@@ -92,6 +92,14 @@ api.delete_job(job_id)
 api.cancel_job(job_id)
 ```
 
+#### Jobs in front
+
+Use after queueing job to check number of jobs ahead of yours
+
+```python
+api.fetch_jobs_in_front(job_id)
+```
+
 #### List all profiles
 
 ```python
@@ -288,6 +296,6 @@ If you're receiving an error in the 400 response range follow these steps:
 To package:
 
 ```bash
-  python setup.py sdist bdist_wheel
+  python -m build
   python -m twine upload dist/*
 ```
