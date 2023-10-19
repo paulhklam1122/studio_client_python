@@ -123,7 +123,7 @@ payload = {
   'name': 'My profile'
 }
 
-api.create_profile(profile_id, payload=payload)
+api.update_profile(profile_id, payload=payload)
 ```
 
 For all payload options, consult the [API documentation](https://studio-docs.skylabtech.ai/#tag/profile/operation/updateProfileById).
