@@ -254,7 +254,8 @@ class api: #pylint: disable=invalid-name
             'GET'
         )
 
-    def get_upload_url(self, payload=None):
+    def get_upload_url(self, payload={"use_cache_upload": True}):
+      print('payload', payload)
       return self._api_request('photos/upload_url', 'GET', payload=payload)
 
     def create_photo(self, payload=None):
@@ -292,11 +293,8 @@ class api: #pylint: disable=invalid-name
             upload_url = upload_url_resp.json()['url']
 
         else:
-            payload = {
-                "use_cache_upload": use_cache_upload
-            }
             # Ask studio for a presigned url + key
-            upload_url_resp = self.get_upload_url(payload=payload)
+            upload_url_resp = self.get_upload_url()
 
             key = upload_url_resp.json()['key']
             upload_url = upload_url_resp.json()['url']
@@ -350,14 +348,6 @@ class api: #pylint: disable=invalid-name
         return self._api_request(
             'photos/list_for_job',
             'GET',
-            payload=payload
-        )
-
-    def update_photo(self, photo_id, payload=None):
-        """ API call to update a specific photo """
-        return self._api_request(
-            'photos/%s' % photo_id,
-            'PUT',
             payload=payload
         )
 

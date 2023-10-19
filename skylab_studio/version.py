@@ -3,4 +3,4 @@ SkylabStudio - Python Client
 For more information, visit https://studio.skylabtech.ai
 """
 
-VERSION = '0.0.1'
+VERSION = '0.0.3'
