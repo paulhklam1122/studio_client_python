@@ -37,9 +37,9 @@ class api: #pylint: disable=invalid-name
     """
 
     # initialization
-    api_proto = os.environ['API_PROTO']
-    api_port = os.environ['API_PORT']
-    api_host = os.environ['API_HOST']
+    api_proto='https'
+    api_port='443'
+    api_host='studio.skylabtech.ai'
 
     # this is not package version -> used to construct the request base url
     api_version = '1'
