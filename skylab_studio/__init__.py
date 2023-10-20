@@ -183,12 +183,6 @@ class api: #pylint: disable=invalid-name
             'PUT',
             payload=payload
         )
-    
-    def update_job_callback_url(self):
-        return self._api_request(
-            'jobs/job_callback_url',
-            'PATCH'
-        )
 
     def queue_job(self, job_id, payload=None):
         return self._api_request(

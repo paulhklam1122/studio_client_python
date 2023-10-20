@@ -11,7 +11,7 @@ with open('README.md') as fp:
 
 setup(
     name='skylab_studio',
-    version='0.0.5',
+    version='0.0.6',
     author='skylabtech',
     author_email='info@skylabtech.ai',
     packages=find_packages(),
