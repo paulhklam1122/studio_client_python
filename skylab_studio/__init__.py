@@ -180,7 +180,7 @@ class api: #pylint: disable=invalid-name
         """ API call to update a specific job """
         return self._api_request(
             'jobs/%s' % job_id,
-            'PUT',
+            'PATCH',
             payload=payload
         )
 
@@ -237,7 +237,7 @@ class api: #pylint: disable=invalid-name
         """ API call to update a specific profile """
         return self._api_request(
             'profiles/%s' % profile_id,
-            'PUT',
+            'PATCH',
             payload=payload
         )
 
