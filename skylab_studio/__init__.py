@@ -37,9 +37,9 @@ class api: #pylint: disable=invalid-name
     """
 
     # initialization
-    api_proto='https'
-    api_port='443'
-    api_host='studio.skylabtech.ai'
+    api_proto=os.environ['API_PROTO'] or 'https'
+    api_port=os.environ['API_PORT'] or '443'
+    api_host=os.environ['API_HOST'] or 'studio.skylabtech.ai'
 
     # this is not package version -> used to construct the request base url
     api_version = '1'
@@ -249,7 +249,6 @@ class api: #pylint: disable=invalid-name
         )
 
     def get_upload_url(self, payload={"use_cache_upload": True}):
-      print('payload', payload)
       return self._api_request('photos/upload_url', 'GET', payload=payload)
 
     def create_photo(self, payload=None):
@@ -262,9 +261,10 @@ class api: #pylint: disable=invalid-name
 
     def upload_photo(self, photo_path, model, id, use_cache_upload=False):
         photo_name = os.path.basename(photo_path)
-
+        tags = {}
         # Read file contents to binary
-        data = open(photo_path, "rb")
+        with open(photo_path, "rb") as file:
+            data = file.read()
 
         # model - either job or profile (job_id/profile_id)
         photo_data = { f"{model}_id": id, "name": photo_name }
@@ -272,6 +272,10 @@ class api: #pylint: disable=invalid-name
         if not use_cache_upload and model == 'job':
 
             photo_data['use_cache_upload'] = use_cache_upload
+            job_type = self.get_job(id).json()['type']
+
+            if job_type == 'regular':
+                tags = { 'X-Amz-Tagging': 'job=photo&api=true' }
 
             # Ask studio to create the photo record
             photo_resp = self.create_photo(photo_data)
@@ -301,24 +305,38 @@ class api: #pylint: disable=invalid-name
 
             photo_data['key'] = key
 
+
         # PUT request to presigned url with image data
-        upload_photo_resp = requests.put(upload_url, data)
+        try:
+          upload_photo_resp = requests.put(upload_url, data, headers=tags)
 
-        if upload_photo_resp.status_code != 200:
-          retry = 0
-          # retry upload
-          while retry < 3:
-            upload_photo_resp = requests.put(upload_url, data)
-            if upload_photo_resp.status_code != 200:
-                if retry == 2:  # Check if retry count is 2 (0-based indexing):
-                    raise Exception('Unable to upload to bucket after retrying.')
+          if upload_photo_resp.status_code != 200:
+            print('First upload attempt failed, retrying...')
+            retry = 0
+            # retry upload
+            while retry < 3:
+                upload_photo_resp = requests.put(upload_url, data, headers=tags)
 
-                time.sleep(1)
-                retry += 1
+                if upload_photo_resp.status_code == 200:
+                    break  # Upload was successful, exit the loop
+                elif retry == 2:  # Check if retry count is 2 (0-based indexing)
+                    raise Exception('Unable to upload to the bucket after retrying.')
+                else:
+                    time.sleep(1)  # Wait for a moment before retrying
+                    retry += 1
+
+        except Exception as e:
+          print(f"An exception of type {type(e).__name__} occurred: {e}")
+
+          if not use_cache_upload:
+              print('Deleting created, but unuploaded photo...')
+              self.delete_photo(photo_id)
 
         if use_cache_upload:
+          # photo gets created after upload in cache case because photo promote job
           photo_creation_req = self.create_photo(photo_data)
 
+          # photo will be in bucket but no record will have been created.
           if photo_creation_req.status_code != 201:
               raise Exception(photo_creation_req.json()['errors'])
 
