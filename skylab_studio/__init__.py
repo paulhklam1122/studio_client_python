@@ -248,7 +248,7 @@ class api: #pylint: disable=invalid-name
             'GET'
         )
 
-    def get_upload_url(self, payload={"use_cache_upload": True}):
+    def get_upload_url(self, payload={"use_cache_upload": False}):
       return self._api_request('photos/upload_url', 'GET', payload=payload)
 
     def create_photo(self, payload=None):
@@ -259,63 +259,72 @@ class api: #pylint: disable=invalid-name
             payload=payload
         )
 
-    def upload_photo(self, photo_path, model, id, use_cache_upload=False):
+    def calculate_md5(self, file_path):
+        md5_hash = hashlib.md5()
+        with open(file_path, "rb") as file:
+            for chunk in iter(lambda: file.read(4096), b""):
+                md5_hash.update(chunk)
+        return md5_hash.hexdigest()
+
+    def upload_photo(self, photo_path, model, id):
+        valid_exts_to_check = ('.jpg', '.jpeg', '.png', '.webp')
+        if not photo_path.lower().endswith(valid_exts_to_check):
+            raise Exception('Invalid file type: must be of type jpg/jpeg/png/webp')
+
+        file_size = os.path.getsize(photo_path)
+        if file_size > 27 * 1024 * 1024:
+            raise Exception('Invalid file size: must be no larger than 27MB')
+
         photo_name = os.path.basename(photo_path)
-        tags = {}
+        headers = {}
+
         # Read file contents to binary
         with open(photo_path, "rb") as file:
             data = file.read()
+            md5hash = hashlib.md5(data).hexdigest()
 
         # model - either job or profile (job_id/profile_id)
-        photo_data = { f"{model}_id": id, "name": photo_name }
+        photo_data = { f"{model}_id": id, "name": photo_name, "use_cache_upload": False }
 
-        if not use_cache_upload and model == 'job':
-
-            photo_data['use_cache_upload'] = use_cache_upload
+        if model == 'job':
             job_type = self.get_job(id).json()['type']
 
             if job_type == 'regular':
-                tags = { 'X-Amz-Tagging': 'job=photo&api=true' }
+                headers = { 'X-Amz-Tagging': 'job=photo&api=true' }
 
-            # Ask studio to create the photo record
-            photo_resp = self.create_photo(photo_data)
-            photo_id = photo_resp.json()['id']
+        # Ask studio to create the photo record
+        photo_resp = self.create_photo(photo_data)
 
-            payload = {
-                "use_cache_upload": use_cache_upload,
-                "photo_id": photo_id,
-            }
+        if photo_resp.status_code != 201:
+            raise Exception('Unable to create the photo object')
 
-            # Ask studio for a presigned url
-            upload_url_resp = self.get_upload_url(payload=payload)
-            upload_url = upload_url_resp.json()['url']
+        photo_id = photo_resp.json()['id']
 
-        else:
-            # Ask studio for a presigned url + key
-            upload_url_resp = self.get_upload_url()
+        # md5 = self.calculate_md5(photo_path)
+        b64md5 = base64.b64encode(bytes.fromhex(md5hash)).decode('utf-8')
+        payload = {
+            "use_cache_upload": False,
+            "photo_id": photo_id,
+            "content_md5": b64md5
+        }
+            # md5hash
 
-            key = upload_url_resp.json()['key']
-            upload_url = upload_url_resp.json()['url']
-
-            if not key:
-              raise Exception('Unable to obtain upload key')
-
-            if not upload_url:
-              raise Exception('Unable to obtain upload_url')
-
-            photo_data['key'] = key
-
+        # Ask studio for a presigned url
+        upload_url_resp = self.get_upload_url(payload=payload)
+        upload_url = upload_url_resp.json()['url']
 
         # PUT request to presigned url with image data
+        headers["Content-MD5"] = b64md5
+
         try:
-          upload_photo_resp = requests.put(upload_url, data, headers=tags)
+          upload_photo_resp = requests.put(upload_url, data, headers=headers)
 
           if upload_photo_resp.status_code != 200:
             print('First upload attempt failed, retrying...')
             retry = 0
             # retry upload
             while retry < 3:
-                upload_photo_resp = requests.put(upload_url, data, headers=tags)
+                upload_photo_resp = requests.put(upload_url, data, headers=headers)
 
                 if upload_photo_resp.status_code == 200:
                     break  # Upload was successful, exit the loop
@@ -327,18 +336,8 @@ class api: #pylint: disable=invalid-name
 
         except Exception as e:
           print(f"An exception of type {type(e).__name__} occurred: {e}")
-
-          if not use_cache_upload:
-              print('Deleting created, but unuploaded photo...')
-              self.delete_photo(photo_id)
-
-        if use_cache_upload:
-          # photo gets created after upload in cache case because photo promote job
-          photo_creation_req = self.create_photo(photo_data)
-
-          # photo will be in bucket but no record will have been created.
-          if photo_creation_req.status_code != 201:
-              raise Exception(photo_creation_req.json()['errors'])
+          print('Deleting created, but unuploaded photo...')
+          self.delete_photo(photo_id)
 
         return upload_photo_resp
 

@@ -142,18 +142,9 @@ For all payload options, consult the [API documentation](https://studio-docs.sky
 api.list_photos()
 ```
 
-#### Get photo upload url
-
-Returns key for create photo
-
-```python
-api.get_upload_url()
-```
-
 #### Create photo
 
 ```python
-
 api.create_photo(payload=payload)
 ```
 
@@ -167,7 +158,9 @@ api.get_photo(photo_id)
 
 #### Upload photo
 
-##### upload_photo(photo_path, model, model_id, use_cache_upload=False)
+```python
+upload_photo(photo_path, model, model_id)
+```
 
 model can either be 'job' or 'profile'
 
