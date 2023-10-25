@@ -47,6 +47,8 @@ class api: #pylint: disable=invalid-name
             raise Exception("You must specify an api key")
 
         self.api_key = api_key
+        if 'api_url' in kwargs:
+            self.api_url = kwargs['api_url']
         if 'debug' in kwargs:
             self.debug = kwargs['debug']
 
