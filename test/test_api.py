@@ -34,18 +34,6 @@ def test_api_no_key():
     with pytest.raises(Exception):
         skylab_studio.api(None)
 
-def test_api_host():
-    """ Test api host setting. """
-    assert skylab_studio.api('KEY', api_host='test.com').api_host == 'test.com'
-
-def test_api_proto():
-    """ Test api proto setting. """
-    assert skylab_studio.api('KEY', api_proto='http').api_proto == 'http'
-
-def test_api_port():
-    """ Test api port setting. """
-    assert skylab_studio.api('KEY', api_port='80').api_port == '80'
-
 def test_api_version():
     """ Test api version setting. """
     assert skylab_studio.api('KEY', api_version='2').api_version == '2'

@@ -48,6 +48,9 @@ class api: #pylint: disable=invalid-name
 
         self.api_key = api_key
 
+        if 'api_version' in kwargs:
+          self.api_version = kwargs['api_version']
+
         if 'debug' in kwargs:
             self.debug = kwargs['debug']
 
