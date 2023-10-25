@@ -28,18 +28,13 @@ class api: #pylint: disable=invalid-name
         api_key (str): Your account's API KEY.
 
     Attributes:
-        api_proto (str): The API endpoint protocol.
-        api_port (str): The API endpoint port.
-        api_host (str): The API endpoint host name.
         api_version (str): The API endpoint version number.
         api_key (str): The API key to use.
         debug (boolean): Whether or not to allow debugging information to be printed.
     """
 
     # initialization
-    api_proto=os.environ['API_PROTO'] or 'https'
-    api_port=os.environ['API_PORT'] or '443'
-    api_host=os.environ['API_HOST'] or 'studio.skylabtech.ai'
+    api_url=os.environ['SKYLAB_API_URL'] or 'https://studio.skylabtech.ai:443'
 
     # this is not package version -> used to construct the request base url
     api_version = '1'
@@ -52,15 +47,6 @@ class api: #pylint: disable=invalid-name
             raise Exception("You must specify an api key")
 
         self.api_key = api_key
-
-        if 'api_host' in kwargs:
-            self.api_host = kwargs['api_host']
-        if 'api_proto' in kwargs:
-            self.api_proto = kwargs['api_proto']
-        if 'api_port' in kwargs:
-            self.api_port = kwargs['api_port']
-        if 'api_version' in kwargs:
-            self.api_version = kwargs['api_version']
         if 'debug' in kwargs:
             self.debug = kwargs['debug']
 
@@ -91,10 +77,8 @@ class api: #pylint: disable=invalid-name
     def _build_request_path(self, endpoint):
         path = '/api/public/v%s/%s' % (self.api_version, endpoint)
 
-        path = "%s://%s:%s%s" % (
-            self.api_proto,
-            self.api_host,
-            self.api_port,
+        path = "%s%s" % (
+            self.api_url,
             path
         )
 
@@ -267,6 +251,7 @@ class api: #pylint: disable=invalid-name
         return md5_hash.hexdigest()
 
     def upload_photo(self, photo_path, model, id):
+        res = {}
         valid_exts_to_check = ('.jpg', '.jpeg', '.png', '.webp')
         if not photo_path.lower().endswith(valid_exts_to_check):
             raise Exception('Invalid file type: must be of type jpg/jpeg/png/webp')
@@ -299,6 +284,7 @@ class api: #pylint: disable=invalid-name
             raise Exception('Unable to create the photo object')
 
         photo_id = photo_resp.json()['id']
+        res['photo'] = photo_resp.json()
 
         # md5 = self.calculate_md5(photo_path)
         b64md5 = base64.b64encode(bytes.fromhex(md5hash)).decode('utf-8')
@@ -307,7 +293,6 @@ class api: #pylint: disable=invalid-name
             "photo_id": photo_id,
             "content_md5": b64md5
         }
-            # md5hash
 
         # Ask studio for a presigned url
         upload_url_resp = self.get_upload_url(payload=payload)
@@ -339,7 +324,8 @@ class api: #pylint: disable=invalid-name
           print('Deleting created, but unuploaded photo...')
           self.delete_photo(photo_id)
 
-        return upload_photo_resp
+        res['upload_response'] = upload_photo_resp.status_code
+        return res
 
     def get_photo(self, photo_id):
         """ API call to get a specific photo """

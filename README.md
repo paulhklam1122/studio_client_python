@@ -142,14 +142,6 @@ For all payload options, consult the [API documentation](https://studio-docs.sky
 api.list_photos()
 ```
 
-#### Create photo
-
-```python
-api.create_photo(payload=payload)
-```
-
-For all payload options, consult the [API documentation](https://studio-docs.skylabtech.ai/#tag/photo/operation/createPhoto).
-
 #### Get photo
 
 ```python
@@ -157,6 +149,8 @@ api.get_photo(photo_id)
 ```
 
 #### Upload photo
+
+This function handles validating a photo, creating a photo object and uploading it to your job/profile's s3 bucket. If the bucket upload process fails, it retries 3 times and if failures persist, the photo object is deleted.
 
 ```python
 upload_photo(photo_path, model, model_id)
@@ -176,7 +170,13 @@ OR
 api.upload_photo('/path/to/photo', 'profile', profile_id)
 ```
 
+`Returns: { photo: { photo_object }, upload_response: bucket_upload_response_status }`
+
+If upload fails, the photo object is deleted for you. If upload succeeds and you later decide you no longer want to include that image, use delete_photo to remove it.
+
 #### Delete photo
+
+This will remove the photo from the job/profile's bucket. Useful for when you've accidentally uploaded an image that you'd like removed.
 
 ```python
 api.delete_photo(photo_id)
