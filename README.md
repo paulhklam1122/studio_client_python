@@ -234,20 +234,6 @@ api.validate_hmac_headers(secret_key, job_json, request_timestamp, signature)
     403
 ```
 
-## Testing
-
-To run the test suite:
-
-```bash
-pytest
-```
-
-To run the test suite with code coverage metrics:
-
-```bash
-pytest --cov-report --cov=skylab_studio
-```
-
 ## Troubleshooting
 
 ### General Troubleshooting
