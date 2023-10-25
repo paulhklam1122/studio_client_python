@@ -34,7 +34,7 @@ class api: #pylint: disable=invalid-name
     """
 
     # initialization
-    api_url=os.environ['SKYLAB_API_URL'] or 'https://studio.skylabtech.ai:443'
+    api_url = os.environ['SKYLAB_API_URL'] or 'https://studio.skylabtech.ai:443'
 
     # this is not package version -> used to construct the request base url
     api_version = '1'
