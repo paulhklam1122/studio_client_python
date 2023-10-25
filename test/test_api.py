@@ -22,7 +22,7 @@ def api_key():
 @pytest.fixture
 def api_options():
     """ Returns an example dictionary configuration. """
-    return {'debug': True, 'api_url': os.environ['SKYLAB_API_URL'] }
+    return {'debug': True }
 
 @pytest.fixture
 def api(api_key, api_options):

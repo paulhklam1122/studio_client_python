@@ -12,9 +12,7 @@ jobs:
       fail-fast: true
     env:
       PY_SDK_STAGING_KEY: ${{ secrets.PY_SDK_STAGING_KEY }}
-      API_PROTO: ${{ secrets.API_PROTO }}
-      API_PORT: ${{ secrets.API_PORT }}
-      API_HOST: ${{ secrets.API_HOST }}
+      SKYLAB_API_URL: ${{ secrets.SKYLAB_API_URL }}
 
     steps:
       - name: Checkout code
