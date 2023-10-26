@@ -65,7 +65,7 @@ payload = {
   'profile_id': 2
 }
 
-api.create_job(job_id, payload=payload)
+api.update_job(job_id, payload=payload)
 ```
 
 For all payload options, consult the [API documentation](https://studio-docs.skylabtech.ai/#tag/job/operation/updateJobById).

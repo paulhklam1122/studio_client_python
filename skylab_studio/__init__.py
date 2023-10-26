@@ -34,7 +34,10 @@ class api: #pylint: disable=invalid-name
     """
 
     # initialization
-    api_url = os.environ['SKYLAB_API_URL'] or 'https://studio.skylabtech.ai:443'
+    try:
+        api_url = os.environ['SKYLAB_API_URL']
+    except KeyError:
+        api_url = 'https://studio.skylabtech.ai:443'
 
     # this is not package version -> used to construct the request base url
     api_version = '1'
@@ -239,7 +242,8 @@ class api: #pylint: disable=invalid-name
     def get_upload_url(self, payload={"use_cache_upload": False}):
       return self._api_request('photos/upload_url', 'GET', payload=payload)
 
-    def create_photo(self, payload=None):
+    # todo privatize this method and test photo_upload
+    def _create_photo(self, payload=None):
         """ API call to create a photo """
         return self._api_request(
             'photos',
@@ -282,7 +286,7 @@ class api: #pylint: disable=invalid-name
                 headers = { 'X-Amz-Tagging': 'job=photo&api=true' }
 
         # Ask studio to create the photo record
-        photo_resp = self.create_photo(photo_data)
+        photo_resp = self._create_photo(photo_data)
 
         if photo_resp.status_code != 201:
             raise Exception('Unable to create the photo object')

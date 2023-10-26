@@ -121,6 +121,16 @@ def test_create_profile(api):
     assert profile_id is not None
     assert result.status_code == 201
 
+def test_upload_photo(api, pytestconfig):
+    global job_id
+    global photo_id
+
+    result = api.upload_photo(f"{pytestconfig.rootdir}/test/test-portrait-1.JPG", 'job', job_id)
+
+    assert result['photo']['id'] is not None
+    photo_id = result['photo']['id']
+    assert result['upload_response'] == 200
+
 def test_get_profile(api):
     global profile_id
     result = api.get_profile(profile_id)
@@ -137,32 +147,6 @@ def test_update_profile(api):
 def test_list_photos(api):
     result = api.list_photos()
     assert result.status_code == 200
-
-def test_create_photo(api):
-    global photo_id
-    global profile_id
-
-    job_name = str(uuid.uuid4())
-    job_payload = {
-      'name': job_name,
-      'profile_id': 24
-    }
-
-    result = api.create_job(payload=job_payload)
-    job_id = result.json()['id']
-
-    photo_name = str(uuid.uuid4())
-    payload = {
-        "job_id": job_id,
-        "name": photo_name,
-        "use_cache_upload": False
-    }
-
-    photo_result = api.create_photo(payload=payload)
-    photo_id = photo_result.json()['id']
-
-    assert photo_id is not 0
-    assert result.status_code == 201
 
 def test_get_photo(api):
     global photo_id
