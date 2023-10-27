@@ -13,6 +13,7 @@ import base64
 import hashlib
 
 from .version import VERSION
+from .studio_exception import StudioException
 
 API_HEADER_KEY = 'X-SLT-API-KEY'
 API_HEADER_CLIENT = 'X-SLT-API-CLIENT'
@@ -117,26 +118,39 @@ class api: #pylint: disable=invalid-name
             headers=headers,
         )
 
-        if http_method == 'POST':
-            if data:
-                response = requests.post(path, data=data, **req_kw)
-            else:
-                response = requests.post(path, **req_kw)
-        elif http_method == 'PUT':
-            response = requests.put(path, data=data, **req_kw)
-        elif http_method == 'DELETE':
-            response = requests.delete(path, **req_kw)
-        else:
-            response = requests.get(path, data=data, **req_kw)
-
-        LOGGER.debug('\tresponse code:%s', response.status_code)
-
         try:
-            LOGGER.debug('\tresponse: %s', response.json())
-        except ValueError:
-            LOGGER.debug('\tresponse: %s', response.content)
+          if http_method == 'POST':
+              if data:
+                  response = requests.post(path, data=data, **req_kw)
+              else:
+                  response = requests.post(path, **req_kw)
+          elif http_method == 'PUT':
+              response = requests.put(path, data=data, **req_kw)
+          elif http_method == 'DELETE':
+              response = requests.delete(path, **req_kw)
+          else:
+              response = requests.get(path, data=data, **req_kw)
 
-        return response
+          LOGGER.debug('\tresponse code:%s', response.status_code)
+
+          try:
+              LOGGER.debug('\tresponse: %s', response.json())
+          except ValueError:
+              LOGGER.debug('\tresponse: %s', response.content)
+
+          if not response.ok:
+              status_code = response.status_code
+              message = response.json()['message']
+
+              raise StudioException(status_code, message)
+        except (StudioException, Exception) as e:
+              formatted_response = {
+                  "message": e.message,
+                  "status": e.status_code
+              }
+              return formatted_response
+
+        return response.json()
 
     def list_jobs(self):
         """ API call to get all jobs """
@@ -239,7 +253,7 @@ class api: #pylint: disable=invalid-name
             'GET'
         )
 
-    def get_upload_url(self, payload={"use_cache_upload": False}):
+    def _get_upload_url(self, payload={"use_cache_upload": False}):
       return self._api_request('photos/upload_url', 'GET', payload=payload)
 
     # todo privatize this method and test photo_upload
@@ -303,7 +317,7 @@ class api: #pylint: disable=invalid-name
         }
 
         # Ask studio for a presigned url
-        upload_url_resp = self.get_upload_url(payload=payload)
+        upload_url_resp = self._get_upload_url(payload=payload)
         upload_url = upload_url_resp.json()['url']
 
         # PUT request to presigned url with image data
