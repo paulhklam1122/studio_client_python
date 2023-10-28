@@ -271,8 +271,14 @@ class api: #pylint: disable=invalid-name
             for chunk in iter(lambda: file.read(4096), b""):
                 md5_hash.update(chunk)
         return md5_hash.hexdigest()
+    
+    def upload_job_photo(self, photo_path, id):
+        return self._upload_photo(photo_path, id, 'job')
 
-    def upload_photo(self, photo_path, model, id):
+    def upload_profile_photo(self, photo_path, id):
+        return self._upload_photo(photo_path, id, 'profile')
+
+    def _upload_photo(self, photo_path, id, model='job'):
         res = {}
         valid_exts_to_check = ('.jpg', '.jpeg', '.png', '.webp')
         if not photo_path.lower().endswith(valid_exts_to_check):
@@ -294,19 +300,18 @@ class api: #pylint: disable=invalid-name
         photo_data = { f"{model}_id": id, "name": photo_name, "use_cache_upload": False }
 
         if model == 'job':
-            job_type = self.get_job(id).json()['type']
+            job_type = self.get_job(id)['type']
 
             if job_type == 'regular':
                 headers = { 'X-Amz-Tagging': 'job=photo&api=true' }
 
         # Ask studio to create the photo record
         photo_resp = self._create_photo(photo_data)
+        if not photo_resp:
+            raise Exception('Unable to create the photo object, if creating profile photo, ensure enable_extract and replace_background is set to: True')
 
-        if photo_resp.status_code != 201:
-            raise Exception('Unable to create the photo object')
-
-        photo_id = photo_resp.json()['id']
-        res['photo'] = photo_resp.json()
+        photo_id = photo_resp['id']
+        res['photo'] = photo_resp
 
         # md5 = self.calculate_md5(photo_path)
         b64md5 = base64.b64encode(bytes.fromhex(md5hash)).decode('utf-8')
@@ -318,7 +323,7 @@ class api: #pylint: disable=invalid-name
 
         # Ask studio for a presigned url
         upload_url_resp = self._get_upload_url(payload=payload)
-        upload_url = upload_url_resp.json()['url']
+        upload_url = upload_url_resp['url']
 
         # PUT request to presigned url with image data
         headers["Content-MD5"] = b64md5
@@ -326,14 +331,14 @@ class api: #pylint: disable=invalid-name
         try:
           upload_photo_resp = requests.put(upload_url, data, headers=headers)
 
-          if upload_photo_resp.status_code != 200:
+          if not upload_photo_resp:
             print('First upload attempt failed, retrying...')
             retry = 0
             # retry upload
             while retry < 3:
                 upload_photo_resp = requests.put(upload_url, data, headers=headers)
 
-                if upload_photo_resp.status_code == 200:
+                if upload_photo_resp:
                     break  # Upload was successful, exit the loop
                 elif retry == 2:  # Check if retry count is 2 (0-based indexing)
                     raise Exception('Unable to upload to the bucket after retrying.')

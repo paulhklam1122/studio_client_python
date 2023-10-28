@@ -1,9 +1,5 @@
 # Skylab Studio Python Client
 
-[![CircleCI](https://circleci.com/gh/skylab-tech/studio_client_python.svg?style=svg)](https://circleci.com/gh/skylab-tech/studio_client_python)
-[![Maintainability](https://api.codeclimate.com/v1/badges/6e3316f60d72a9ca9276/maintainability)](https://codeclimate.com/github/skylab-tech/studio_client_python/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/6e3316f60d72a9ca9276/test_coverage)](https://codeclimate.com/github/skylab-tech/studio_client_python/test_coverage)
-
 SkylabTech Studio Python client.
 
 [studio.skylabtech.ai](https://studio.skylabtech.ai)
@@ -16,6 +12,36 @@ SkylabTech Studio Python client.
 
 ```bash
 $ pip install skylab_studio
+```
+
+## Example usage
+
+```python
+# CREATE PROFILE
+payload = {
+  "name": "profile name",
+}
+
+api.create_profile(payload=payload)
+
+# CREATE JOB
+payload={
+  "name": "job name",
+  "profile_id": profile_id
+}
+
+job = api.create_job(payload)
+
+# UPLOAD JOB PHOTO(S)
+filePath = "/path/to/photo"
+api.upload_job_photo(filePath, job.id)
+
+# QUEUE JOB
+payload = { "callback_url" = "YOUR_CALLBACK_ENDPOINT" }
+api.queue_job(job.id, payload)
+
+# NOTE: Once the job is queued, it will get processed then complete
+# We will send a response to the specified callback_url with the output photo download urls
 ```
 
 ## Usage
@@ -148,26 +174,20 @@ api.list_photos()
 api.get_photo(photo_id)
 ```
 
-#### Upload photo
+#### Upload job photo
 
 This function handles validating a photo, creating a photo object and uploading it to your job/profile's s3 bucket. If the bucket upload process fails, it retries 3 times and if failures persist, the photo object is deleted.
 
 ```python
-upload_photo(photo_path, model, model_id)
+api.upload_job_photo(photo_path, job_id)
 ```
 
-model can either be 'job' or 'profile'
+#### Upload profile photo
 
-model_id is the jobs/profiles respective id
-
-```python
-api.upload_photo('/path/to/photo', 'job', job_id)
-```
-
-OR
+This function handles validating a background photo for a profile. Note: enable_extract and replace_background (profile attributes) MUST be true in order to create background photos. Follows the same upload process as upload_job_photo.
 
 ```python
-api.upload_photo('/path/to/photo', 'profile', profile_id)
+api.upload_profile_photo(photo_path, profile_id)
 ```
 
 `Returns: { photo: { photo_object }, upload_response: bucket_upload_response_status }`
