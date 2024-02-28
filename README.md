@@ -44,6 +44,17 @@ api.queue_job(job.id, payload)
 # We will send a response to the specified callback_url with the output photo download urls
 ```
 
+```python
+# OPTIONAL: If you want this SDK to handle photo downloads to a specified output folder
+
+# FETCH COMPLETED JOB (wait until job status is completed)
+completed_job = api.get_job(queued_job['id']);
+
+# DOWNLOAD COMPLETED JOB PHOTOS
+photos_list = completed_job['photos'];
+await api.download_all_photos(photos_list, completed_job['profile'], "photos/output/");
+```
+
 ## Usage
 
 For all examples, assume:
@@ -193,6 +204,27 @@ api.upload_profile_photo(photo_path, profile_id)
 `Returns: { photo: { photo_object }, upload_response: bucket_upload_response_status }`
 
 If upload fails, the photo object is deleted for you. If upload succeeds and you later decide you no longer want to include that image, use delete_photo to remove it.
+
+#### Download photo(s)
+
+This function handles downloading the output photos to a specified directory.
+
+```dotnet
+photos_list = completed_job.photos;
+
+download_results = await api.download_all_photos(photos_list, completed_job.profile, "/output/folder/path");
+
+print(download_results)
+
+Output:
+{'success_photos': ['1.JPG'], 'errored_photos': []}
+```
+
+OR
+
+```dotnet
+api.download_photo(photo_id, "/output/folder/path");
+```
 
 #### Delete photo
 
