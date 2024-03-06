@@ -1,4 +1,4 @@
-name: "Studio PY SDK"
+name: 'Studio PY SDK'
 on: [push]
 
 concurrency:
@@ -21,11 +21,14 @@ jobs:
       - name: Update system
         run: sudo apt-get update
 
+      - name: Install libvips
+        run: sudo apt install libvips-dev --no-install-recommends
+
       - uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.x"
+          python-version: '3.x'
 
       - name: Install dependencies
         run: |
