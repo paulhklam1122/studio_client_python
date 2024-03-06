@@ -258,13 +258,6 @@ class api: #pylint: disable=invalid-name
             payload=payload
         )
 
-    def list_photos(self):
-        """ API call to get all photos """
-        return self._api_request(
-            'photos',
-            'GET'
-        )
-    
     ###### PHOTO ENDPOINTS ######
 
     def _get_upload_url(self, payload={"use_cache_upload": False}):

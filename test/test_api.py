@@ -154,10 +154,6 @@ def test_update_profile(api):
     result = api.update_profile(profile_id, payload=payload)
     assert result is not None
 
-def test_list_photos(api):
-    result = api.list_photos()
-    assert result is not None
-
 def test_get_photo(api):
     global photo_id
     result = api.get_photo(photo_id)
