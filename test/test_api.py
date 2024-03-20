@@ -55,12 +55,10 @@ def test_create_job(api):
       'profile_id': 24
     }
 
-    print('yooooOOooOooo')
     result = api.create_job(payload=job_payload)
-    print('PRINTING', result)
     global job_id
 
-    # job_id = result['id']
+    job_id = result['id']
     assert job_id is not None
     assert result is not None
 

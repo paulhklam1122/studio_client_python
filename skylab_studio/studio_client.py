@@ -160,7 +160,6 @@ class api: #pylint: disable=invalid-name
               }
               return formatted_response
 
-        print('RETURNING RESPONSE JSON')
         return response.json()
 
     ###### JOB ENDPOINTS ######
