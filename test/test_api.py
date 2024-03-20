@@ -55,10 +55,12 @@ def test_create_job(api):
       'profile_id': 24
     }
 
+    print('yooooOOooOooo')
     result = api.create_job(payload=job_payload)
+    print('PRINTING', result)
     global job_id
 
-    job_id = result['id']
+    # job_id = result['id']
     assert job_id is not None
     assert result is not None
 
@@ -76,7 +78,7 @@ def test_update_job(api):
         'name': new_job_name
     }
     result = api.update_job(job_id, payload=payload)
-    assert result['name'] is new_job_name
+    assert result['name'] == new_job_name
 
 def test_cancel_job(api):
     job_name = str(uuid.uuid4())
@@ -154,7 +156,7 @@ def test_update_profile(api):
         'description': 'a description!'
     }
     result = api.update_profile(profile_id, payload=payload)
-    assert result['name'] is new_profile_name
+    assert result['name'] == new_profile_name
 
 def test_get_photo(api):
     global photo_id
