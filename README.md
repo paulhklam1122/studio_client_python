@@ -203,7 +203,7 @@ If upload fails, the photo object is deleted for you. If upload succeeds and you
 
 This function handles downloading the output photos to a specified directory.
 
-```dotnet
+```python
 photos_list = completed_job.photos;
 
 download_results = await api.download_all_photos(photos_list, completed_job.profile, "/output/folder/path");
@@ -216,7 +216,7 @@ Output:
 
 OR
 
-```dotnet
+```python
 api.download_photo(photo_id, "/output/folder/path");
 ```
 

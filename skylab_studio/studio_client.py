@@ -132,6 +132,8 @@ class api: #pylint: disable=invalid-name
                   response = requests.post(path, data=data, **req_kw)
               else:
                   response = requests.post(path, **req_kw)
+          elif http_method == 'PATCH':
+              response = requests.patch(path, data=data, **req_kw)
           elif http_method == 'PUT':
               response = requests.put(path, data=data, **req_kw)
           elif http_method == 'DELETE':
@@ -272,13 +274,6 @@ class api: #pylint: disable=invalid-name
             payload=payload
         )
 
-    def calculate_md5(self, file_path):
-        md5_hash = hashlib.md5()
-        with open(file_path, "rb") as file:
-            for chunk in iter(lambda: file.read(4096), b""):
-                md5_hash.update(chunk)
-        return md5_hash.hexdigest()
-    
     def upload_job_photo(self, photo_path, id):
         return self._upload_photo(photo_path, id, 'job')
 
@@ -320,7 +315,6 @@ class api: #pylint: disable=invalid-name
         photo_id = photo_resp['id']
         res['photo'] = photo_resp
 
-        # md5 = self.calculate_md5(photo_path)
         b64md5 = base64.b64encode(bytes.fromhex(md5hash)).decode('utf-8')
         payload = {
             "use_cache_upload": False,
@@ -411,7 +405,7 @@ class api: #pylint: disable=invalid-name
             temp_bgs.append(bg_image)
 
         return temp_bgs if temp_bgs else None
-    
+
     async def _download_image(self, image_url):
         if not image_url.lower().startswith("http"):
             raise Exception(f'Invalid retouchedUrl: "{image_url}" - Please ensure the job is complete')
@@ -451,7 +445,7 @@ class api: #pylint: disable=invalid-name
     async def download_all_photos(self, photos_list, profile, output_path):
         if not os.path.exists(output_path):
             raise Exception("Invalid output path")
-        
+
         success_photos = []
         errored_photos = []
         bgs = []
@@ -461,7 +455,7 @@ class api: #pylint: disable=invalid-name
             profile = self.get_profile(profile['id'])
             if profile['photos']:
                 bgs = await self._download_bg_images(profile)
-            
+
             photo_ids = [photo["id"] for photo in photos_list]
             photo_options = {
                 'bgs': bgs
@@ -483,10 +477,10 @@ class api: #pylint: disable=invalid-name
             return { 'success_photos': success_photos, 'errored_photos': errored_photos }
 
         except Exception as e:
-            print(e)
+            print("Error has occurred whilst downloading photos:", e)
 
             return { 'success_photos': success_photos, 'errored_photos': errored_photos }
-    
+
     async def download_photo(self, photo_id, output_path, profile = None, options = {}, semaphore = None):
         if not os.path.exists(output_path):
             raise Exception("Invalid output path")
@@ -496,7 +490,7 @@ class api: #pylint: disable=invalid-name
         photo = self.get_photo(photo_id)
         profile_id = photo['job']['profileId']
         file_name = photo['name']
-        
+
         try:
             if profile is None:
                 profile = self.get_profile(profile_id)
