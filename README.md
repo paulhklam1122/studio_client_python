@@ -6,17 +6,21 @@ SkylabTech Studio Python client.
 
 ## Requirements
 
-- [Python requests library](http://docs.python-requests.org/en/master/user/install/#install)
+libvips is required to be installed on your machine in order to install skylab-studio (for pyvips).
+
+- [Libvips documentation](https://www.libvips.org/install.html)
 
 ## Installation
 
 ```bash
-$ pip install skylab_studio
+$ pip install skylab-studio
 ```
 
 ## Example usage
 
 ```python
+import skylab_studio
+
 # CREATE PROFILE
 payload = {
   "name": "profile name",

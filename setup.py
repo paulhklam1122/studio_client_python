@@ -11,7 +11,7 @@ with open('README.md') as fp:
 
 setup(
     name='skylab_studio',
-    version='0.0.13',
+    version='0.0.14',
     author='skylabtech',
     author_email='info@skylabtech.ai',
     packages=find_packages(),
@@ -24,7 +24,7 @@ setup(
     test_suite="skylabtech.test",
     install_requires=[
         "aiohttp >= 3.9.3",
-        "pyvips >= 2.2.2", 
+        "pyvips==2.0.2",
         "requests >= 2.0.0"
     ],
     extras_require={
