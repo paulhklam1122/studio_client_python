@@ -14,7 +14,8 @@ import hmac
 import base64
 import hashlib
 import requests
-from io import BytesIO
+# from io import BytesIO
+import sentry_sdk
 
 from .version import VERSION
 from .studio_exception import StudioException
@@ -62,7 +63,7 @@ class api: #pylint: disable=invalid-name
 
         if 'debug' in kwargs:
             self.debug = kwargs['debug']
-        
+
         if 'max_concurrent_downloads' in kwargs:
             self.max_concurrent_downloads = kwargs['max_concurrent_downloads']
 
@@ -71,6 +72,18 @@ class api: #pylint: disable=invalid-name
 
             LOGGER.debug('Debug enabled')
             LOGGER.propagate = True
+
+        # initialize sentry
+        sentry_sdk.init(
+          dsn="https://0b5490403ee70db8bd7869af3b10380b@o1409269.ingest.us.sentry.io/4507850876452864",
+          # Set traces_sample_rate to 1.0 to capture 100%
+          # of transactions for tracing.
+          traces_sample_rate=1.0,
+          # Set profiles_sample_rate to 1.0 to profile 100%
+          # of sampled transactions.
+          # We recommend adjusting this value in production.
+          profiles_sample_rate=1.0,
+        )
 
     def _build_http_auth(self):
         return (self.api_key, '')
@@ -331,6 +344,8 @@ class api: #pylint: disable=invalid-name
 
         try:
           upload_photo_resp = requests.put(upload_url, data, headers=headers)
+          # Will raise exception for any statuses 4xx-5xx
+          upload_photo_resp.raise_for_status()
 
           if not upload_photo_resp:
             print('First upload attempt failed, retrying...')
@@ -347,9 +362,15 @@ class api: #pylint: disable=invalid-name
                     time.sleep(1)  # Wait for a moment before retrying
                     retry += 1
 
+        except requests.exceptions.HTTPError as e:
+            sentry_sdk.capture_exception(e)
+            print("HTTP error occurred while trying to upload your photo:", e)
+
         except Exception as e:
+          sentry_sdk.capture_exception(e)
           print(f"An exception of type {type(e).__name__} occurred: {e}")
           print('Deleting created, but unuploaded photo...')
+
           self.delete_photo(photo_id)
 
         res['upload_response'] = upload_photo_resp.status_code
