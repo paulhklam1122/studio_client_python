@@ -18,7 +18,7 @@ import requests
 import sentry_sdk
 
 from .version import VERSION
-from .studio_exception import StudioException
+from exceptions.exceptions import JobNotFoundException, StudioException
 
 API_HEADER_KEY = 'X-SLT-API-KEY'
 API_HEADER_CLIENT = 'X-SLT-API-CLIENT'
@@ -83,6 +83,7 @@ class api: #pylint: disable=invalid-name
           # of sampled transactions.
           # We recommend adjusting this value in production.
           profiles_sample_rate=1.0,
+          ignore_errors=[JobNotFoundException]
         )
 
     def _build_http_auth(self):
@@ -315,10 +316,14 @@ class api: #pylint: disable=invalid-name
         photo_data = { f"{model}_id": id, "name": photo_name, "use_cache_upload": False }
 
         if model == 'job':
-            job_type = self.get_job(id)['type']
+            job = self.get_job(id)
+            if "type" in job:
+                job_type = job['type']
+                if job_type == 'regular':
+                    headers = { 'X-Amz-Tagging': 'job=photo&api=true' }
+            else:
+                raise JobNotFoundException(f"Unable to find job with id: {id}")
 
-            if job_type == 'regular':
-                headers = { 'X-Amz-Tagging': 'job=photo&api=true' }
 
         # Ask studio to create the photo record
         photo_resp = self._create_photo(photo_data)
@@ -352,19 +357,20 @@ class api: #pylint: disable=invalid-name
             retry = 0
             # retry upload
             while retry < 3:
-                upload_photo_resp = requests.put(upload_url, data, headers=headers)
+                try:
+                  upload_photo_resp = requests.put(upload_url, data, headers=headers)
+
+                except requests.exceptions.HTTPError as e:
+                    sentry_sdk.capture_exception(e)
+                    print("HTTP error occurred while trying to upload your photo:", e)
 
                 if upload_photo_resp:
                     break  # Upload was successful, exit the loop
-                elif retry == 2:  # Check if retry count is 2 (0-based indexing)
+                elif retry == 2:  # Check if it's the 3rd retry
                     raise Exception('Unable to upload to the bucket after retrying.')
                 else:
-                    time.sleep(1)  # Wait for a moment before retrying
+                    time.sleep(max(1, retry))  # Wait before retrying (number of retries in seconds (minimum 1))
                     retry += 1
-
-        except requests.exceptions.HTTPError as e:
-            sentry_sdk.capture_exception(e)
-            print("HTTP error occurred while trying to upload your photo:", e)
 
         except Exception as e:
           sentry_sdk.capture_exception(e)
