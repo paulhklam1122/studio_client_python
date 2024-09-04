@@ -18,7 +18,7 @@ import requests
 import sentry_sdk
 
 from .version import VERSION
-from ..exceptions.exceptions import JobNotFoundException, StudioException
+from exceptions import *
 
 API_HEADER_KEY = 'X-SLT-API-KEY'
 API_HEADER_CLIENT = 'X-SLT-API-CLIENT'
