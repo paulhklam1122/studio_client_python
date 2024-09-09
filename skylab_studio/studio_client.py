@@ -14,10 +14,10 @@ import hmac
 import base64
 import hashlib
 import requests
-from io import BytesIO
+import sentry_sdk
 
 from .version import VERSION
-from .studio_exception import StudioException
+from exceptions import *
 
 API_HEADER_KEY = 'X-SLT-API-KEY'
 API_HEADER_CLIENT = 'X-SLT-API-CLIENT'
@@ -62,7 +62,7 @@ class api: #pylint: disable=invalid-name
 
         if 'debug' in kwargs:
             self.debug = kwargs['debug']
-        
+
         if 'max_concurrent_downloads' in kwargs:
             self.max_concurrent_downloads = kwargs['max_concurrent_downloads']
 
@@ -71,6 +71,19 @@ class api: #pylint: disable=invalid-name
 
             LOGGER.debug('Debug enabled')
             LOGGER.propagate = True
+
+        # initialize sentry
+        sentry_sdk.init(
+          dsn="https://0b5490403ee70db8bd7869af3b10380b@o1409269.ingest.us.sentry.io/4507850876452864",
+          # Set traces_sample_rate to 1.0 to capture 100%
+          # of transactions for tracing.
+          traces_sample_rate=1.0,
+          # Set profiles_sample_rate to 1.0 to profile 100%
+          # of sampled transactions.
+          # We recommend adjusting this value in production.
+          profiles_sample_rate=1.0,
+          ignore_errors=[JobNotFoundException, PhotoNotFoundException]
+        )
 
     def _build_http_auth(self):
         return (self.api_key, '')
@@ -302,14 +315,19 @@ class api: #pylint: disable=invalid-name
         photo_data = { f"{model}_id": id, "name": photo_name, "use_cache_upload": False }
 
         if model == 'job':
-            job_type = self.get_job(id)['type']
+            job = self.get_job(id)
+            if "type" in job:
+                job_type = job['type']
+                if job_type == 'regular':
+                    headers = { 'X-Amz-Tagging': 'job=photo&api=true' }
+            else:
+                raise JobNotFoundException(f"Unable to find job with id: {id}")
 
-            if job_type == 'regular':
-                headers = { 'X-Amz-Tagging': 'job=photo&api=true' }
 
         # Ask studio to create the photo record
         photo_resp = self._create_photo(photo_data)
-        if not photo_resp:
+
+        if not 'id' in photo_resp:
             raise Exception('Unable to create the photo object, if creating profile photo, ensure enable_extract and replace_background is set to: True')
 
         photo_id = photo_resp['id']
@@ -329,28 +347,30 @@ class api: #pylint: disable=invalid-name
         # PUT request to presigned url with image data
         headers["Content-MD5"] = b64md5
 
-        try:
-          upload_photo_resp = requests.put(upload_url, data, headers=headers)
+        retry = 0
+        while retry < 3:
+          try:
+            # attempt to upload the photo to aws
+            upload_photo_resp = requests.put(upload_url, data, headers=headers)
 
-          if not upload_photo_resp:
-            print('First upload attempt failed, retrying...')
-            retry = 0
-            # retry upload
-            while retry < 3:
-                upload_photo_resp = requests.put(upload_url, data, headers=headers)
+            # Will raise exception for any statuses 4xx-5xx
+            upload_photo_resp.raise_for_status()
 
-                if upload_photo_resp:
-                    break  # Upload was successful, exit the loop
-                elif retry == 2:  # Check if retry count is 2 (0-based indexing)
-                    raise Exception('Unable to upload to the bucket after retrying.')
-                else:
-                    time.sleep(1)  # Wait for a moment before retrying
-                    retry += 1
+            # if raise_for_status didn't throw an exception, then we successfully uploaded, exit the loop
+            break
 
-        except Exception as e:
-          print(f"An exception of type {type(e).__name__} occurred: {e}")
-          print('Deleting created, but unuploaded photo...')
-          self.delete_photo(photo_id)
+          # rescue any exceptions in the loop
+          except Exception as e:
+            # if we've retried 3 times, delete the photo record and raise exception
+            if retry == 2:
+                self.delete_photo(photo_id)
+
+                raise Exception(e)
+            # if we haven't retried 3 times, wait for retry+1 seconds and continue the while loop
+            else:
+              print(f"Attempt #{retry + 1} to upload failed, retrying...")
+              retry += 1
+              time.sleep(retry+1)
 
         res['upload_response'] = upload_photo_resp.status_code
         return res
@@ -488,6 +508,9 @@ class api: #pylint: disable=invalid-name
             await semaphore.acquire()
 
         photo = self.get_photo(photo_id)
+
+        if not 'job' in photo:
+            raise PhotoNotFoundException(f"Unable to find photo with id: {photo_id}")
         profile_id = photo['job']['profileId']
         file_name = photo['name']
 
@@ -531,4 +554,3 @@ class api: #pylint: disable=invalid-name
         finally:
             if semaphore != None:
                 semaphore.release()
-    

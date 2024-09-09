@@ -6,3 +6,4 @@ pyvips==2.0.2
 requests>=2.0.0
 requests_mock>=1.5.2
 decouple>=0.0.7
+sentry-sdk>=2.13.0
