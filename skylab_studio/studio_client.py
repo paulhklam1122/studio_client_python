@@ -14,7 +14,6 @@ import hmac
 import base64
 import hashlib
 import requests
-# from io import BytesIO
 import sentry_sdk
 
 from .version import VERSION
@@ -327,7 +326,8 @@ class api: #pylint: disable=invalid-name
 
         # Ask studio to create the photo record
         photo_resp = self._create_photo(photo_data)
-        if not photo_resp:
+
+        if not 'id' in photo_resp:
             raise Exception('Unable to create the photo object, if creating profile photo, ensure enable_extract and replace_background is set to: True')
 
         photo_id = photo_resp['id']
@@ -347,37 +347,30 @@ class api: #pylint: disable=invalid-name
         # PUT request to presigned url with image data
         headers["Content-MD5"] = b64md5
 
-        try:
-          upload_photo_resp = requests.put(upload_url, data, headers=headers)
-          # Will raise exception for any statuses 4xx-5xx
-          upload_photo_resp.raise_for_status()
+        retry = 0
+        while retry < 3:
+          try:
+            # attempt to upload the photo to aws
+            upload_photo_resp = requests.put(upload_url, data, headers=headers)
 
-          if not upload_photo_resp:
-            print('First upload attempt failed, retrying...')
-            retry = 0
-            # retry upload
-            while retry < 3:
-                try:
-                  upload_photo_resp = requests.put(upload_url, data, headers=headers)
+            # Will raise exception for any statuses 4xx-5xx
+            upload_photo_resp.raise_for_status()
 
-                except requests.exceptions.HTTPError as e:
-                    sentry_sdk.capture_exception(e)
-                    print("HTTP error occurred while trying to upload your photo:", e)
+            # if raise_for_status didn't throw an exception, then we successfully uploaded, exit the loop
+            break
 
-                if upload_photo_resp:
-                    break  # Upload was successful, exit the loop
-                elif retry == 2:  # Check if it's the 3rd retry
-                    raise Exception('Unable to upload to the bucket after retrying.')
-                else:
-                    time.sleep(max(1, retry))  # Wait before retrying (number of retries in seconds (minimum 1))
-                    retry += 1
+          # rescue any exceptions in the loop
+          except Exception as e:
+            # if we've retried 3 times, delete the photo record and raise exception
+            if retry == 2:
+                self.delete_photo(photo_id)
 
-        except Exception as e:
-          sentry_sdk.capture_exception(e)
-          print(f"An exception of type {type(e).__name__} occurred: {e}")
-          print('Deleting created, but unuploaded photo...')
-
-          self.delete_photo(photo_id)
+                raise Exception(e)
+            # if we haven't retried 3 times, wait for retry+1 seconds and continue the while loop
+            else:
+              print(f"Attempt #{retry + 1} to upload failed, retrying...")
+              retry += 1
+              time.sleep(retry+1)
 
         res['upload_response'] = upload_photo_resp.status_code
         return res
@@ -558,4 +551,3 @@ class api: #pylint: disable=invalid-name
         finally:
             if semaphore != None:
                 semaphore.release()
-    
