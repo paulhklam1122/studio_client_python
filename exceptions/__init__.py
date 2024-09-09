@@ -1,3 +1,3 @@
-from .exceptions import JobNotFoundException, StudioException
+from .exceptions import JobNotFoundException, StudioException, PhotoNotFoundException
 
-__all__ = ['JobNotFoundException', 'StudioException']
+__all__ = ['JobNotFoundException', 'StudioException', 'PhotoNotFoundException']

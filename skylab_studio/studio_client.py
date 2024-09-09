@@ -82,7 +82,7 @@ class api: #pylint: disable=invalid-name
           # of sampled transactions.
           # We recommend adjusting this value in production.
           profiles_sample_rate=1.0,
-          ignore_errors=[JobNotFoundException]
+          ignore_errors=[JobNotFoundException, PhotoNotFoundException]
         )
 
     def _build_http_auth(self):
@@ -508,6 +508,9 @@ class api: #pylint: disable=invalid-name
             await semaphore.acquire()
 
         photo = self.get_photo(photo_id)
+
+        if not 'job' in photo:
+            raise PhotoNotFoundException(f"Unable to find photo with id: {photo_id}")
         profile_id = photo['job']['profileId']
         file_name = photo['name']
 
